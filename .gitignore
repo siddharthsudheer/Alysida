@@ -5,8 +5,8 @@ __pycache__
 */__pycache__
 */**/__pycache__
 __pycache__/
-db/myDbs/*.db
-db/myDbs/downloads/*.db
+db/my_dbs/*.db
+db/my_dbs/downloads/*.db
 node_config.json
 output/*
 

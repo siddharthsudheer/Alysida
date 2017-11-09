@@ -25,16 +25,16 @@ SetupDB(DBService)
 # print(DBService.compare_dbs("node_addresses", "1_node_addresses"))
 
 
-def create_app(db_store):
-    api = application = falcon.API()
-    api.add_route('/chain/{action}', server.Chain(db_store))  # GET
-    api.add_route('/new-transaction/{action}',
-                  server.NewTransaction(db_store))  # POST
-    api.add_route('/register/{action}', server.RegisterNode(db_store))  # POST
-    return api
+# def create_app(db_store):
+#     api = application = falcon.API()
+#     api.add_route('/chain/{action}', server.Chain(db_store))  # GET
+#     api.add_route('/new-transaction/{action}',
+#                   server.NewTransaction(db_store))  # POST
+#     api.add_route('/register/{action}', server.RegisterNode(db_store))  # POST
+#     return api
 
 
-def start_alysida():
-    storage_path = os.environ.get('DB_STORAGE_PATH', './db/myDbs')
-    db_store = DBStore(storage_path)
-    return create_app(db_store)
+# def start_alysida():
+#     storage_path = os.environ.get('DB_STORAGE_PATH', './db/myDbs')
+#     db_store = DBStore(storage_path)
+#     return create_app(db_store)

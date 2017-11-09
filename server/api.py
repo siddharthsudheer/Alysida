@@ -88,8 +88,8 @@ class RegisterNode(object):
             print(result_json)
             resp.status = falcon.HTTP_201
             resp.body = json.dumps(result_json)
-            vals = (result_json['nodename'], result_json['ip'], DBService.get_timestamp())
-            post_sql = DBService.insert_into("node_addresses", vals)
-            DBService.post("node_addresses", post_sql)
+            vals = (result_json['uuid'], result_json['ip'], DBService.get_timestamp())
+            post_sql = DBService.insert_into("peer_addresses", vals)
+            DBService.post("peer_addresses", post_sql)
         else:
             raise falcon.HTTPError(falcon.HTTP_400, 'Incorrect Endpoint Used.')

@@ -2,7 +2,7 @@
 import sqlite3 as lite
 import datetime as date
 
-DB_PATH = "./db/myDbs/"
+DB_PATH = "./db/my_dbs/"
 DB_DOWNLOADS_PATH = DB_PATH + 'downloads/'
 
 
@@ -49,22 +49,22 @@ def post(dbs, user_query):
 
 def insert_into(dbs, vals):
     def _node_addresses(vals):
-        return "INSERT INTO node_addresses (NODENAME, IP, TIME_STAMP) VALUES {}".format(vals)
+        return "INSERT INTO peer_addresses (IP, TIME_STAMP) VALUES {}".format(vals)
 
     def _main_chain(vals):
         return "INSERT INTO main_chain (NONCE, HASH, BLOCK_DATA, TIME_STAMP) VALUES {}".format(vals)
 
     def _unconfirmed_txns(vals):
-        return "INSERT INTO unconfirmed_txns (HASH, TXN_DATA, TIME_STAMP) VALUES {}".format(vals)
+        return "INSERT INTO unconfirmed_pool (HASH, TXN_DATA, TIME_STAMP) VALUES {}".format(vals)
 
     def _my_node_info(vals):
-        return "INSERT INTO my_node_info (IP, NODENAME, PREFERENCES) VALUES {}".format(vals)
+        return "INSERT INTO node_prefs (UUID, IP, PREFERENCES) VALUES {}".format(vals)
 
     options = {
-        'node_addresses': _node_addresses(vals),
+        'peer_addresses': _node_addresses(vals),
         'main_chain': _main_chain(vals),
-        'unconfirmed_txns': _unconfirmed_txns(vals),
-        'my_node_info': _my_node_info(vals)
+        'unconfirmed_pool': _unconfirmed_txns(vals),
+        'node_prefs': _my_node_info(vals)
     }
 
     return options[dbs]
@@ -99,9 +99,9 @@ def compare_dbs(my_db, their_db):
                 cursor.execute("ATTACH DATABASE '{}' AS db2".format(db2))
                 sql_query = """
                     SELECT *
-                    FROM node_addresses as db1
+                    FROM peer_addresses as db1
                     WHERE db1.HASH NOT IN
-                    (SELECT DISTINCT HASH FROM db2.node_addresses) 
+                    (SELECT DISTINCT HASH FROM db2.peer_addresses) 
                 """
                 cursor.execute(sql_query)
                 col_names = [desc[0] for desc in cursor.description]

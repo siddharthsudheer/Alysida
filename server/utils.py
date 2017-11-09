@@ -10,8 +10,8 @@ import db.service as DBService
 
 def broadcast(payload, endpoint, request):
     # Make Async
-    sql_query = "SELECT IP FROM node_addresses"
-    ips = DBService.query("node_addresses", sql_query)['rows']
+    sql_query = "SELECT IP FROM peer_addresses"
+    ips = DBService.query("peer_addresses", sql_query)['rows']
     # my_ip = socket.gethostbyname(socket.gethostname())
     peer_nodes = list(map(lambda i: 'http://{}:4200/'.format(i), ips))
     # peer_nodes = ['http://localhost:4201/', 'http://localhost:4202/', 'http://localhost:4203/']

@@ -42,12 +42,10 @@ alysida_mykill() {
 
 start() {
     alysida_mynohup $ALYSIDA
-    # alysida_mynohup $WEBAPP
 }
 
 stop() {
     alysida_mykill $ALYSIDA
-    # alysida_mykill $WEBAPP
 
     alysida_unset_env_vars
     unset -f alysida_unset_env_vars

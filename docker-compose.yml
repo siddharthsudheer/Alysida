@@ -15,61 +15,61 @@ services:
     networks:
       - net
 
-  a1.siddharthsudheer.com:
+  cli:
     image: sidd/alysida
     depends_on:
       - alysida-master
     stdin_open: true
     tty: true
-    container_name: a1.siddharthsudheer.com
+    container_name: cli
     environment:
       - GUNICORN_WORKERS=5
     ports:
       - "4200:4200"
       - "4201:4201"
-    command: /bin/bash -c 'source ./start.sh'
+    command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
         ipv4_address: 10.0.0.2
 
-  a2.siddharthsudheer.com:
+  a2.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    container_name: a2.siddharthsudheer.com
+    container_name: a2.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
       - "4202:4201"
-    command: /bin/bash -c 'source ./start.sh'
+    command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
         ipv4_address: 10.0.0.3
 
-  a3.siddharthsudheer.com:
+  a3.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    container_name: a3.siddharthsudheer.com
+    container_name: a3.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
       - "4203:4201"
-    command: /bin/bash -c 'source ./start.sh'
+    command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
         ipv4_address: 10.0.0.4
 
-  a4.siddharthsudheer.com:
+  a4.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    container_name: a4.siddharthsudheer.com
+    container_name: a4.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
       - "4204:4201"
-    command: /bin/bash -c 'source ./start.sh'
+    command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
         ipv4_address: 10.0.0.5
