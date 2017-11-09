@@ -5,8 +5,7 @@ __pycache__
 */__pycache__
 */**/__pycache__
 __pycache__/
-db/my_dbs/*.db
-db/my_dbs/downloads/*.db
-node_config.json
-output/*
+
+alysida_platform/db/my_dbs/
+alysida_platform/node_config.json
 
