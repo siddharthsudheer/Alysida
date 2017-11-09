@@ -1,0 +1,8 @@
+__title__ = 'Alysída'
+__description__ = 'Blockchain for Humans.'
+__url__ = 'http://github.com/siddharthsudheer/alysida'
+__version__ = '1.0.0'
+__author__ = 'Siddharth Sudheer'
+__author_email__ = 'siddharthsudheer@gmail.com'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2017 Siddharth Sudheer'

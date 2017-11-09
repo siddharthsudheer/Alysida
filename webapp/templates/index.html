@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Blockchain</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900" rel="stylesheet">
+  </head>
+   <body>
+     <h4>{{msg}}</h4>
+    <table>
+      <h3>Table: node_addresses</h3>
+      <thead>
+         {% for col in table['column_names'] %}
+         <td>{{col}}</td>
+         {% endfor %}
+      </thead>
+      {% for row in table['rows'] %}
+           <tr>
+           {% for item in row %}
+            <td>{{item}}</td>
+           {% endfor %}
+         </tr>
+      {% endfor %}
+   </table>
+   </body>
+</html>

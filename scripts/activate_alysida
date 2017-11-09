@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# This file must be used with "source scripts/activate_alysida" *from bash*
+# you cannot run it directly
+
+# First, Make sure to unalias any alysida environment variables
+# if it's already there
+unset -f alysida_unset_env_vars
+# unset -f alysida >/dev/null 2>&1
+alysida_unset_env_vars() {
+    unset -f alysida_mynohup >/dev/null 2>&1
+    unset -f alysida_mykill >/dev/null 2>&1
+    unset -f start >/dev/null 2>&1
+    unset -f stop >/dev/null 2>&1
+}
+alysida_unset_env_vars
+
+
+
+# Script Names
+ALYSIDA="alysida"
+WEBAPP="webapp"
+ORIGINAL_PS1=$PS1
+export PS1="(Alysída) $ORIGINAL_PS1"
+
+alysida_mynohup() {
+    [[ "$1" = "" ]] && echo "usage: mynohup script_file" && return 0
+    nohup "./scripts/$1_start.sh" >"./output/$1.out" 2>&1 < /dev/null &
+    echo $'\n======================================='
+    echo $'  Process '$1' has started.'
+    echo $'=======================================\n'
+}
+
+alysida_mykill() {
+    ps -ef | grep "$1" | grep -v grep | awk '{print $2}' | xargs kill
+    echo $'\n======================================='
+    echo $'  Process '$1' has been killed.'
+    echo $'=======================================\n'
+}
+
+
+
+start() {
+    alysida_mynohup $ALYSIDA
+    # alysida_mynohup $WEBAPP
+}
+
+stop() {
+    alysida_mykill $ALYSIDA
+    # alysida_mykill $WEBAPP
+
+    alysida_unset_env_vars
+    unset -f alysida_unset_env_vars
+    export PS1="$ORIGINAL_PS1"
+}
+
+
+
+alysida() {
+    if [ "${1}" == 'start' ] ; then
+        start
+    elif [ "${1}" == 'stop' ] ; then
+        stop
+    else
+        echo $'\n======================================='
+        echo $'  Alysída'
+        echo $'======================================='
+        echo $'  Correct Usage:'
+        echo $'    --> alysida start'
+        echo $'    --> alysida stop'
+        echo $'======================================='
+        echo $'  Please try again.'
+        echo $'=======================================\n'
+    fi
+}

@@ -1,0 +1,12 @@
+.pylintrc
+.idea
+.vscode
+__pycache__
+*/__pycache__
+*/**/__pycache__
+__pycache__/
+db/myDbs/*.db
+db/myDbs/**/*.db
+node_config.json
+output/*
+

@@ -1,0 +1,18 @@
+.pylintrc
+.idea
+.vscode
+__pycache__
+*/__pycache__
+*/**/__pycache__
+--pycache__/
+.*
+
+#Databases
+./db/myDbs/*.db
+./db/myDbs/downloads/*.db
+docker_run.sh
+./output/*.out
+
+#System Files
+.DS_Store
+Thumbs.db

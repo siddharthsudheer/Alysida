@@ -1,0 +1,75 @@
+version: '3'
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.0.0.1/24
+
+services:
+  alysida-master:
+    build: .
+    image: sidd/alysida
+    container_name: alysida_master
+    networks:
+      - net
+
+  a1.siddharthsudheer.com:
+    image: sidd/alysida
+    depends_on:
+      - alysida-master
+    stdin_open: true
+    tty: true
+    container_name: a1.siddharthsudheer.com
+    environment:
+      - GUNICORN_WORKERS=5
+    ports:
+      - "4200:4200"
+      - "4201:4201"
+    command: /bin/bash -c 'source ./start.sh'
+    networks:
+      net:
+        ipv4_address: 10.0.0.2
+
+  a2.siddharthsudheer.com:
+    image: sidd/alysida
+    depends_on:
+      - alysida-master
+    container_name: a2.siddharthsudheer.com
+    environment:
+      - GUNICORN_WORKERS=5
+    ports:
+      - "4202:4201"
+    command: /bin/bash -c 'source ./start.sh'
+    networks:
+      net:
+        ipv4_address: 10.0.0.3
+
+  a3.siddharthsudheer.com:
+    image: sidd/alysida
+    depends_on:
+      - alysida-master
+    container_name: a3.siddharthsudheer.com
+    environment:
+      - GUNICORN_WORKERS=5
+    ports:
+      - "4203:4201"
+    command: /bin/bash -c 'source ./start.sh'
+    networks:
+      net:
+        ipv4_address: 10.0.0.4
+
+  a4.siddharthsudheer.com:
+    image: sidd/alysida
+    depends_on:
+      - alysida-master
+    container_name: a4.siddharthsudheer.com
+    environment:
+      - GUNICORN_WORKERS=5
+    ports:
+      - "4204:4201"
+    command: /bin/bash -c 'source ./start.sh'
+    networks:
+      net:
+        ipv4_address: 10.0.0.5
