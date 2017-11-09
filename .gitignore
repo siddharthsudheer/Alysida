@@ -7,5 +7,5 @@ __pycache__
 __pycache__/
 
 alysida_platform/db/my_dbs/
-alysida_platform/node_config.json
+alysida_platform/AlysidaFile
 

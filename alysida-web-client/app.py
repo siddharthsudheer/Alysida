@@ -1,39 +1,68 @@
 #!/usr/bin/env python3
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for,jsonify, make_response
 import requests
 import json
-import db.service as DBService
 
 app = Flask(__name__)
 
+ALYSIDA="http://localhost:4200"
+getURL= lambda x: ALYSIDA + x
 
-@app.route('/')
-def home():
-    sqlQuery = "SELECT * FROM node_addresses"
-    res = DBService.query("node_addresses", sqlQuery)
-    print(res)
-    return render_template('index.html', table=res)
+class ResponseParser():
+    def __init__(self, res):
+        self.received = res
+        self.response = make_response(self._response_data(), self.received.status_code)
+        self.response.headers = self._headers()
 
-@app.route('/register')
-def register():
-    return render_template('register.html')
+    def _headers(self):
+        header_list = ['Content-Type', 'Server', 'Date']
+        final_headers = dict()
+        for h in header_list:
+            final_headers[h] = self.received.headers[h]
+        return final_headers
 
-@app.route('/register_node', methods = ['POST', 'GET'])
-def register_node():
-    if request.method == 'POST':
-        payload = {
-            "nodename": request.form['nodename'],
-            "ip": request.form['ipaddr']
+    def _response_data(self):
+        x = json.loads(self.received.text)
+        return jsonify(x)
+    
+    def parse(self):
+        return self.response
+
+@app.route('/add-peer-addresses')
+def add_peer_addresses():
+    url = getURL("/add-peer-addresses")
+    payload = {
+        "ips": ["1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5"]
         }
-        res = requests.post('http://0.0.0.0:4200/register/me', data=json.dumps(payload))
-        if res.status_code == 201:
-            return redirect(url_for('home'))
-        else:
-            return render_template("result.html", msg ="Error in adding new record")
-            
+    res = requests.post(url, data=json.dumps(payload))
+    response = ResponseParser(res).parse()
+    return response
+
+
+@app.route('/register-me')
+def register_me():
+    url = getURL("/register-me")
+    res = requests.get(url)
+    response = ResponseParser(res).parse()
+    return response
+
+
+@app.route('/get-peer-addresses')
+def get_peer_addresses():
+    url = getURL("/get-peer-addresses")
+    res = requests.get(url)
+    response = ResponseParser(res).parse()
+    return response
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True,  port=4201)
+    app.run(host="0.0.0.0", debug=True,  port=5200)

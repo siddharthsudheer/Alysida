@@ -28,8 +28,27 @@ def query(dbs, user_query, in_downloads=False):
     except lite.OperationalError as e:
         print(e)
 
+def post_many(dbs, user_query, ls):
+    resp = False
+    try:
+        db_path = DB_PATH + dbs + '.db'
+        conn = lite.connect(db_path)
+        try:
+            with conn:
+                conn.executemany(user_query, ls)
+                resp = True
+        except lite.Error as e:
+            conn.rollback()
+            print(e)
+    except lite.OperationalError as e:
+        print(e)
+    finally:
+        conn.close()
+    return resp
+
 
 def post(dbs, user_query):
+    resp = False
     try:
         db_path = DB_PATH + dbs + '.db'
         conn = lite.connect(db_path)
@@ -38,6 +57,7 @@ def post(dbs, user_query):
                 cursor = conn.cursor()
                 cursor.execute(user_query)
                 conn.commit()
+                resp = True
         except lite.Error as e:
             conn.rollback()
             print(e)
@@ -45,25 +65,26 @@ def post(dbs, user_query):
         print(e)
     finally:
         conn.close()
+    return resp
 
 
 def insert_into(dbs, vals):
-    def _node_addresses(vals):
-        return "INSERT INTO peer_addresses (IP, TIME_STAMP) VALUES {}".format(vals)
+    def _peer_addresses(vals):
+        return "INSERT INTO peer_addresses (IP) VALUES ('{}')".format(vals)
 
     def _main_chain(vals):
         return "INSERT INTO main_chain (NONCE, HASH, BLOCK_DATA, TIME_STAMP) VALUES {}".format(vals)
 
-    def _unconfirmed_txns(vals):
+    def _unconfirmed_pool(vals):
         return "INSERT INTO unconfirmed_pool (HASH, TXN_DATA, TIME_STAMP) VALUES {}".format(vals)
 
     def _my_node_info(vals):
         return "INSERT INTO node_prefs (UUID, IP, PREFERENCES) VALUES {}".format(vals)
 
     options = {
-        'peer_addresses': _node_addresses(vals),
+        'peer_addresses': _peer_addresses(vals),
         'main_chain': _main_chain(vals),
-        'unconfirmed_pool': _unconfirmed_txns(vals),
+        'unconfirmed_pool': _unconfirmed_pool(vals),
         'node_prefs': _my_node_info(vals)
     }
 

@@ -12,22 +12,30 @@ def broadcast(payload, endpoint, request):
     # Make Async
     sql_query = "SELECT IP FROM peer_addresses"
     ips = DBService.query("peer_addresses", sql_query)['rows']
-    # my_ip = socket.gethostbyname(socket.gethostname())
     peer_nodes = list(map(lambda i: 'http://{}:4200/'.format(i), ips))
-    # peer_nodes = ['http://localhost:4201/', 'http://localhost:4202/', 'http://localhost:4203/']
 
     if request == 'POST':
+        responses = []
+
         for peer in peer_nodes:
             url = peer + endpoint
-            requests.post(url, data=json.dumps(payload))
+            resp = requests.post(url, data=json.dumps(payload))
+            responses.append({ 
+                'Peer': '{}'.format(peer),
+                'Message': json.loads(resp.text)
+                })
+        return responses
+
     elif request == 'GET':
         response = []
+
         for peer in peer_nodes:
             url = peer + endpoint
             peer_name = urlparse(peer).netloc
             resp = (re.sub('[^A-Za-z0-9]+', '', peer_name),
                     requests.get(url, stream=True))
             response.append(resp)
+
         return response
 
 

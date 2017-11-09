@@ -44,7 +44,7 @@ function printHelp () {
 function askProceed () {
   read -p "Continue (y/n)? " ans
   case "$ans" in
-    y|Y )
+    y|Y|"" )
       echo -e "${GREEN}proceeding...${NC}"
       echo
     ;;
@@ -102,16 +102,13 @@ function networkUp () {
     exit 1
   fi
   # To see what's running on cli
-  # docker logs -f cli
+  docker logs -f cli
 }
 
 # Tear down running network
 function networkDown () {
-  docker-compose -f $COMPOSE_FILE down
-  # Don't remove containers, images, etc if restarting
-  if [ "$MODE" != "restart" ]; then
-    cleanUp
-  fi
+  docker-compose -f $COMPOSE_FILE stop
+  docker-compose -f $COMPOSE_FILE kill && docker-compose -f $COMPOSE_FILE down
 }
 
 
@@ -164,6 +161,7 @@ elif [ "${MODE}" == "down" ]; then ## Clear the network
   networkDown
 elif [ "${MODE}" == "restart" ]; then ## Restart the network
   networkDown
+  cleanUp
   networkUp
 elif [ "${MODE}" == "cleanup" ]; then ## Restart the network
   cleanUp

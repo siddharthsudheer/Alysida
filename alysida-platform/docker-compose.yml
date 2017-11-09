@@ -15,22 +15,19 @@ services:
     networks:
       - net
 
-  cli:
+  a1.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    stdin_open: true
-    tty: true
-    container_name: cli
+    container_name: a1.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
-      - "4200:4200"
-      - "4201:4201"
+      - "4201:4200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
-        ipv4_address: 10.0.0.2
+        ipv4_address: 10.0.0.101
 
   a2.alysida.com:
     image: sidd/alysida
@@ -40,11 +37,11 @@ services:
     environment:
       - GUNICORN_WORKERS=5
     ports:
-      - "4202:4201"
+      - "4202:4200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
-        ipv4_address: 10.0.0.3
+        ipv4_address: 10.0.0.102
 
   a3.alysida.com:
     image: sidd/alysida
@@ -54,22 +51,26 @@ services:
     environment:
       - GUNICORN_WORKERS=5
     ports:
-      - "4203:4201"
+      - "4203:4200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
-        ipv4_address: 10.0.0.4
+        ipv4_address: 10.0.0.103
 
-  a4.alysida.com:
+  cli:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    container_name: a4.alysida.com
+      - a1.alysida.com
+      - a2.alysida.com
+      - a3.alysida.com
+    tty: true
+    container_name: cli
     environment:
       - GUNICORN_WORKERS=5
     ports:
-      - "4204:4201"
+      - "4200:4200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
-        ipv4_address: 10.0.0.5
+        ipv4_address: 10.0.0.104

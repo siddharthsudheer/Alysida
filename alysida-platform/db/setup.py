@@ -10,7 +10,6 @@ DB_SCHEMA = {
         "schema": """
             CREATE TABLE IF NOT EXISTS peer_addresses (
                 IP                      VARCHAR(15),
-                TIME_STAMP              TIMESTAMP,
                 PRIMARY KEY             (IP)
             );
         """
@@ -51,7 +50,7 @@ DB_SCHEMA = {
 
 DB_PATH = "./db/my_dbs/"
 DB_DOWNLOADS_PATH = DB_PATH + 'downloads/'
-NODE_CONFIG = './node_config.json'
+NODE_CONFIG = './AlysidaFile'
 
 
 class SetupDB(object):
@@ -66,53 +65,56 @@ class SetupDB(object):
                 open(db_path, 'w').close()
             DBService.post(dbfile, db_obj['schema'])
 
-        # with open(NODE_CONFIG) as data_file:
-        #     self.config = json.load(data_file)
-        #     data_file.close()
+        with open(NODE_CONFIG) as data_file:
+            self.config = json.load(data_file)
+            data_file.close()
 
-    #     self.populate_node_addresses()
-    #     self.populate_my_node_info()
+        self.populate_peer_addresses()
+        self.populate_my_prefs()
 
-    # def populate_node_addresses(self):
-    #     """
-    #         Populate the node_addresses db if empty
-    #     """
+    def populate_peer_addresses(self):
+        """
+            Populate the peer_addresses db if empty
+        """
 
-    #     sql_query = "SELECT count(*) FROM peer_addresses"
-    #     res = DBService.query("node_addresses", sql_query)
-    #     num_addrs = res['rows'][0]
+        sql_query = "SELECT count(*) FROM peer_addresses"
+        res = DBService.query("peer_addresses", sql_query)
+        num_addrs = res['rows'][0]
 
-    #     if not num_addrs > 0:
-    #         for node in self.config['OTHER_NODE_ADDRESSES']:
-    #             vals = (node['ip_address'],
-    #                     DBService.get_timestamp())
-    #             insert_sql = DBService.insert_into("peer_addresses", vals)
-    #             DBService.post("peer_addresses", insert_sql)
+        if not num_addrs > 0:
+            core_peer_insert_sql = DBService.insert_into("peer_addresses", self.config['CORE_PEER'])
+            popo = DBService.post("peer_addresses", core_peer_insert_sql)
+            
+            if len(self.config['PEER_ADDRESSES']) > 0:
+                for peer_ip in self.config['PEER_ADDRESSES']:
+                    insert_sql = DBService.insert_into("peer_addresses", peer_ip)
+                    DBService.post("peer_addresses", insert_sql)
 
-    # def populate_my_node_info(self):
-    #     """
-    #         Populate my_node_info db if its empty or the
-    #         info in config file doesn't match the db data.
-    #     """
-    #     sql_query = "SELECT * FROM node_prefs"
-    #     res = DBService.query("node_prefs", sql_query)
-    #     try:
-    #         my_ip = socket.gethostbyname(socket.gethostname())
-    #     except:
-    #         my_ip = socket.gethostname()
-    #     vals = (my_ip,
-    #             self.config['MY_NODE_NAME'],
-    #             self.config['MY_PREFERENCES'])
 
-    #     def _insert_config_info():
-    #         insert_sql = DBService.insert_into("node_prefs", vals)
-    #         DBService.post("node_prefs", insert_sql)
+    def populate_my_prefs(self):
+        """
+            Populate my_prefs db if its empty or the
+            info in config file doesn't match the db data.
+        """
+        sql_query = "SELECT * FROM node_prefs"
+        res = DBService.query("node_prefs", sql_query)
+        
+        try:
+            my_ip = socket.gethostbyname(socket.gethostname())
+        except:
+            my_ip = socket.gethostname()
+       
+        vals = (self.config['UUID'], my_ip, self.config['MY_PREFERENCES'])
 
-    #     if not res:
-    #         # If no info in DB
-    #         _insert_config_info()
-    #     elif res['rows'][0] != vals:
-    #         # If info doesnt match
-    #         delete_sql = "DELETE FROM node_prefs WHERE IP='{}'".format(my_ip)
-    #         DBService.post("node_prefs", delete_sql)
-    #         _insert_config_info()
+        def _insert_config_info():
+            insert_sql = DBService.insert_into("node_prefs", vals)
+            DBService.post("node_prefs", insert_sql)
+
+        if not res:
+            # If no info in DB
+            _insert_config_info()
+        elif res['rows'][0] != vals:
+            # If info doesnt match
+            delete_sql = "DELETE FROM node_prefs WHERE IP='{}'".format(my_ip)
+            DBService.post("node_prefs", delete_sql)
+            _insert_config_info()
