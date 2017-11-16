@@ -20,6 +20,9 @@ def create_app(db_store):
     api.add_route('/add-new-transaction', server.AddNewTransaction())  # POST
     api.add_route('/accept-new-transaction', server.AcceptNewTransaction())  # POST
     api.add_route('/get-unconfirmed-transactions', server.GetUnconfirmedTransactions())  # GET
+    # api.add_route('/get-txn-info/{txn_id}', server.GetTxnInfo())  # GET
+
+    
     return api
 
 

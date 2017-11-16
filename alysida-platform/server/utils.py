@@ -8,8 +8,15 @@ import falcon
 import hashlib
 import db.service as DBService
 
-# Make Async
 def broadcast(payload, endpoint, request):
+    """
+        TODO: 
+            • Make Async
+            • Handle when peer doesn't respond 
+              (and show error message accordingly - 404 maybe)
+            • Separate 'POST' and 'GET'
+              (broadcast should be only for Posting stuff to everyone)
+    """
     my_ip=str(socket.gethostbyname(socket.gethostname()))
     sql_query = "SELECT IP FROM peer_addresses WHERE IP!='{}'".format(my_ip)
     query_result = DBService.query("peer_addresses", sql_query)
