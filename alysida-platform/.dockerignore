@@ -9,8 +9,6 @@ __pycache__
 
 #Databases
 db/my_dbs/
-node_config.json
-AlysidaFile
 
 #System Files
 .DS_Store

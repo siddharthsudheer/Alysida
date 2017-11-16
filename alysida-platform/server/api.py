@@ -122,7 +122,6 @@ class GetPeerAddresses(object):
                (discovery of nodes in a way).
     """
     def on_get(self, req, resp):
-        # Asking for their chain
         sql_query = "SELECT IP FROM peer_addresses"
         peer_ips = {'peers': DBService.query("peer_addresses", sql_query)['rows']}
         resp.content_type = 'application/json'

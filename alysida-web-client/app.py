@@ -35,7 +35,7 @@ class ResponseParser():
 def add_peer_addresses():
     url = getURL("/add-peer-addresses")
     payload = {
-        "ips": ["1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5"]
+        "ips": ["10.0.0.101", "10.0.0.102", "10.0.0.103"]
         }
     res = requests.post(url, data=json.dumps(payload))
     response = ResponseParser(res).parse()

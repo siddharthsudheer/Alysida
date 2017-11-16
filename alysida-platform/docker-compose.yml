@@ -15,11 +15,11 @@ services:
     networks:
       - net
 
-  a1.alysida.com:
+  peer1.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    container_name: a1.alysida.com
+    container_name: peer1.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
@@ -29,11 +29,11 @@ services:
       net:
         ipv4_address: 10.0.0.101
 
-  a2.alysida.com:
+  peer2.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    container_name: a2.alysida.com
+    container_name: peer2.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
@@ -43,11 +43,11 @@ services:
       net:
         ipv4_address: 10.0.0.102
 
-  a3.alysida.com:
+  peer3.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-    container_name: a3.alysida.com
+    container_name: peer3.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
@@ -57,15 +57,12 @@ services:
       net:
         ipv4_address: 10.0.0.103
 
-  cli:
+  mynode.alysida.com:
     image: sidd/alysida
     depends_on:
       - alysida-master
-      - a1.alysida.com
-      - a2.alysida.com
-      - a3.alysida.com
     tty: true
-    container_name: cli
+    container_name: mynode.alysida.com
     environment:
       - GUNICORN_WORKERS=5
     ports:
