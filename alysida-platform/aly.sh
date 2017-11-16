@@ -187,8 +187,8 @@ function networkUp () {
 
   printAccessUrls
 
-  # # To see what's running on cli
-  # docker logs -f mynode.alysida.com
+  # To see what's running on cli
+  docker logs -f mynode.alysida.com
 }
 
 # Tear down running network

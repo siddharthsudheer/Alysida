@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import json
+import hashlib
 from urllib.parse import urlparse
-
+import db.service as DBService
 
 class Blockchain(object):
     def __init__(self):
@@ -18,19 +20,33 @@ class Blockchain(object):
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
 
-    def new_transaction(self, sender, recipient, amount):
-        """
-        Creates a new transaction to go into the next mined Block
 
-        :param sender: <str> Address of the Sender
-        :param recipient: <str> Address of the Recipient
-        :param amount: <int> Amount
-        :return: <int> The index of the Block that will hold this transaction
-        """
-        new_txn = {
-            'Sender': 'Person1',
-            'Receiver': 'Person2',
-            'Amount': 50
+class TransactionRecord(object):
+    def __init__(self, txn_data):
+        self.txn_data = txn_data
+        self.timestamp = DBService.get_timestamp()
+        self.hash = '{}'.format(self.get_hash())
+
+    def generate(self):
+        jsonified = dict({'data': dict(self.txn_data)})
+        final_txn_data = '{}'.format(jsonified)
+        return (self.hash, final_txn_data, self.timestamp)
+
+    def get_hash(self):
+        data = {
+            'txn_data': '{}'.format(self.txn_data),
+            'time_stamp': '{}'.format(self.timestamp)
         }
 
-        return new_txn
+        # We must make sure that the Dictionary is Ordered, or we'll have inconsistent hashes
+        data_string = json.dumps(data, sort_keys=True).encode()
+        return hashlib.sha256(data_string).hexdigest()
+    
+    def json_format(self):
+        data = {
+            'hash': self.hash,
+            'txn_data': self.txn_data,
+            'time_stamp': '{}'.format(self.timestamp)
+        }
+
+        return data

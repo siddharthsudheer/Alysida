@@ -1,3 +1,3 @@
 #!/usr/bin/env python3
 
-__all__ = ['api', 'utils']
+__all__ = ['handlers', 'utils']

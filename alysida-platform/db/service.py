@@ -29,7 +29,6 @@ def query(dbs, user_query, in_downloads=False):
         print(e)
 
 def post_many(dbs, user_query, ls):
-    resp = False
     try:
         db_path = DB_PATH + dbs + '.db'
         conn = lite.connect(db_path)
@@ -40,15 +39,17 @@ def post_many(dbs, user_query, ls):
         except lite.Error as e:
             conn.rollback()
             print(e)
+            resp = e
     except lite.OperationalError as e:
         print(e)
+        resp = e
     finally:
         conn.close()
     return resp
 
 
 def post(dbs, user_query):
-    resp = False
+    # resp = False
     try:
         db_path = DB_PATH + dbs + '.db'
         conn = lite.connect(db_path)
@@ -61,8 +62,10 @@ def post(dbs, user_query):
         except lite.Error as e:
             conn.rollback()
             print(e)
+            resp = e
     except lite.OperationalError as e:
         print(e)
+        resp = e
     finally:
         conn.close()
     return resp
