@@ -93,10 +93,10 @@ function clearContainers () {
 
 # Ask user which node should be "Core Peer"
 # That is, the first node on the network
-CORE_PEER_IP=""
+CORE_PEER=""
 declare -a nodes
-nodes=([1]="mynode.alysida.com" [2]="peer1.alysida.com" [3]="peer2.alysida.com" [4]="peer3.alysida.com")
-node_ips=([1]="10.0.0.104" [2]="10.0.0.101" [3]="10.0.0.102" [4]="10.0.0.103")
+nodes=([1]="mynode;10.0.0.104;4200" [2]="peer1;10.0.0.101;4201" [3]="peer2;10.0.0.102;4202" [4]="peer3;10.0.0.103;4203")
+
 function askCorePeer () {
     echo
     echo -e "${BLUE}----------------------------------------------------------${NC}"
@@ -108,18 +108,21 @@ function askCorePeer () {
     COUNTER=1
     for node in "${nodes[@]}"
     do
-        echo -e "  ${YELLOW}${COUNTER})  $node${NC}";
+        arr=(${node//;/ })
+        peer_name="${arr[0]}.alysida.com"
+        echo -e "  ${YELLOW}${COUNTER})  $peer_name${NC}";
         let COUNTER+=1
     done
 
     echo -e "${BLUE}----------------------------------------------------------${NC}"
     
     read -e -p "  =>  Core Peer Selection:  " ans
-    CORE_PEER_IP=${node_ips[ans]}
-    CORE_PEER=${nodes[ans]}
-    # echo $CORE_PEER
-    if [ "$CORE_PEER" != "" ]; then
-      echo -e "${GREEN}  =>  Selected Core Peer :  ${CORE_PEER}${NC}"
+    CORE_PEER=(${nodes[ans]//;/ })
+    CORE_PEER_NAME="${CORE_PEER[0]}.alysida.com"
+    CORE_PEER_IP="${CORE_PEER[1]}"
+
+    if [ "$CORE_PEER_NAME" != "" ]; then
+      echo -e "${GREEN}  =>  Selected Core Peer :  ${CORE_PEER_NAME}${NC}"
       echo -e "${GREEN}                            (${CORE_PEER_IP})${NC}"
       echo -e "${BLUE}----------------------------------------------------------${NC}"
     else 
@@ -135,8 +138,11 @@ function createConfig () {
   {
     "UUID": "MY_UUID",
     "MY_PREFERENCES": "None Yet!",
-    "CORE_PEER": "$CORE_PEER_IP",
-    "PEER_ADDRESSES": []
+    "CORE_PEER": {
+      "NAME": "${CORE_PEER[0]}.alysida.com",
+      "IP": "${CORE_PEER[1]}",
+      "ACCESS_URL": "http://localhost:${CORE_PEER[2]}/"
+    }
   }
 EOF
 )"
@@ -164,8 +170,11 @@ function printAccessUrls () {
     COUNTER=1
     for node in "${nodes[@]}"
     do
-        portNum=$((4200+$COUNTER-1))
-        echo -e "  ${YELLOW}${COUNTER}) $node\t=>   ${GREEN}http://localhost:$portNum/ ${NC}";
+        arr=(${node//;/ })
+        peer_name="${arr[0]}.alysida.com"
+        peer_ip="${arr[1]}"
+        peer_access_url="http://localhost:${arr[2]}/"
+        echo -e "  ${YELLOW}${COUNTER}) $peer_name\t=>   ${GREEN}$peer_access_url ${NC}";
         let COUNTER+=1
     done
     echo -e "${BLUE}----------------------------------------------------------${NC}\n"

@@ -29,7 +29,7 @@ class TransactionRecord(object):
 
     def generate(self):
         jsonified = dict({'data': dict(self.txn_data)})
-        final_txn_data = '{}'.format(jsonified)
+        final_txn_data = '{}'.format(jsonified['data'])
         return (self.hash, final_txn_data, self.timestamp)
 
     def get_hash(self):

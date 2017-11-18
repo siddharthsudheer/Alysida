@@ -82,14 +82,9 @@ class SetupDB(object):
         num_addrs = res['rows'][0]
 
         if not num_addrs > 0:
-            core_peer_insert_sql = DBService.insert_into("peer_addresses", self.config['CORE_PEER'])
+            core_peer_ip = self.config['CORE_PEER']['IP']
+            core_peer_insert_sql = DBService.insert_into("peer_addresses", core_peer_ip)
             popo = DBService.post("peer_addresses", core_peer_insert_sql)
-            
-            if len(self.config['PEER_ADDRESSES']) > 0:
-                for peer_ip in self.config['PEER_ADDRESSES']:
-                    insert_sql = DBService.insert_into("peer_addresses", peer_ip)
-                    DBService.post("peer_addresses", insert_sql)
-
 
     def populate_my_prefs(self):
         """
