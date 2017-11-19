@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Alysída: Unconfirmed Transactions</title>
+    <link rel="stylesheet" type="text/css" href="static/styles.css">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900" rel="stylesheet">
+</head>
+
+<body>
+    <h3>Current Unconfirmed Transactions</h3>
+    <div class="btnWrapper" style="margin-top:24px;"><a href="/add-txn">Add Transaction</a></div>
+    {{ if .UnconfirmedTxns}}
+        <table>
+            <thead>
+            <td>Hash</td>
+            <td>Transaction Data</td>
+            <td>Timestamp</td>
+            </thead>
+            {{range .UnconfirmedTxns}}
+            <tr>
+                <td><div>{{.Hash}}</div></td>
+                <td>{{.TxnData}}</td>
+                <td>{{.TimeStamp}}</td>
+            </tr>
+            {{end}}
+        </table>
+    {{else}}
+        <h4>No Transactions Found.</h4>
+    {{end}}
+</body>
+
+</html>
