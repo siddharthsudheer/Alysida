@@ -1,9 +1,0 @@
-  {
-    "UUID": "MY_UUID",
-    "MY_PREFERENCES": "None Yet!",
-    "CORE_PEER": {
-      "NAME": "peer1.alysida.com",
-      "IP": "10.0.0.101",
-      "ACCESS_URL": "http://localhost:4201/"
-    }
-  }

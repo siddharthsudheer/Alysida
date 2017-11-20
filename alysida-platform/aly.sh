@@ -94,6 +94,8 @@ function clearContainers () {
 # Ask user which node should be "Core Peer"
 # That is, the first node on the network
 CORE_PEER=""
+
+# Node Address Definitions
 declare -a nodes
 nodes=([1]="mynode;10.0.0.104;4200" [2]="peer1;10.0.0.101;4201" [3]="peer2;10.0.0.102;4202" [4]="peer3;10.0.0.103;4203")
 
@@ -174,7 +176,8 @@ function printAccessUrls () {
         peer_name="${arr[0]}.alysida.com"
         peer_ip="${arr[1]}"
         peer_access_url="http://localhost:${arr[2]}/"
-        echo -e "  ${YELLOW}${COUNTER}) $peer_name\t=>   ${GREEN}$peer_access_url ${NC}";
+        echo -e "  ${YELLOW}${COUNTER}) $peer_name\t=>  ${GREEN}$peer_access_url ${NC}";
+        echo -e "     ${YELLOW}($peer_ip)\t${NC}";
         let COUNTER+=1
     done
     echo -e "${BLUE}----------------------------------------------------------${NC}\n"

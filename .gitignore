@@ -6,6 +6,7 @@ __pycache__
 */**/__pycache__
 __pycache__/
 
-alysida_platform/db/my_dbs/
-alysida_platform/AlysidaFile
+alysida-platform/db/my_dbs/
+alysida-platform/AlysidaFile
+web-client/tmp-logs/
 
