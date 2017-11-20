@@ -18,15 +18,16 @@ def query(dbs, user_query, in_downloads=False):
                 col_names = [desc[0] for desc in cursor.description]
                 rows = cursor.fetchall()
                 final_rows = list(map(lambda x: x[0] if len(x) == 1 else x, rows))
-                result = False if (len(final_rows) == 0) else {
+                resp = False if (len(final_rows) == 0) else {
                     'column_names': col_names, 'rows': final_rows}
-                return result
         except lite.Error as e:
             print(e)
-        finally:
-            conn.close()
+            resp = e
     except lite.OperationalError as e:
         print(e)
+        resp = e
+    finally:
+        return resp
 
 def post_many(dbs, user_query, ls):
     try:
@@ -101,17 +102,18 @@ def get_timestamp():
 
 
 def get_size(dbs, sql_query, in_downloads=False):
-    return query(dbs, sql_query, in_downloads=in_downloads)['rows'][0][0]
+    result = query(dbs, sql_query, in_downloads=in_downloads)
+    final = 0 if not result else result['rows'][0]
+    return final
 
-
-def compare_dbs(my_db, their_db):
+def compare_dbs(my_db, their_db, on_column):
     size_query = "SELECT COUNT(*) FROM {}".format(my_db)
-    if get_size(my_db, size_query) > get_size(their_db, size_query, in_downloads=True):
+    if get_size(my_db, size_query) > get_size(their_db.replace(".db",""), size_query, in_downloads=True):
         db1 = DB_PATH + my_db + '.db'
-        db2 = DB_DOWNLOADS_PATH + their_db + '.db'
+        db2 = DB_DOWNLOADS_PATH + their_db
         print("My DB is authoritative.")
     else:
-        db1 = DB_DOWNLOADS_PATH + their_db + '.db'
+        db1 = DB_DOWNLOADS_PATH + their_db
         db2 = DB_PATH + my_db + '.db'
         print("Their DB is authoritative.")
 
@@ -123,15 +125,14 @@ def compare_dbs(my_db, their_db):
                 cursor.execute("ATTACH DATABASE '{}' AS db2".format(db2))
                 sql_query = """
                     SELECT *
-                    FROM peer_addresses as db1
-                    WHERE db1.HASH NOT IN
-                    (SELECT DISTINCT HASH FROM db2.peer_addresses) 
-                """
+                    FROM {db_name} as db1
+                    WHERE db1.{column_name} NOT IN
+                    (SELECT DISTINCT {column_name} FROM db2.{db_name}) 
+                """.format(db_name="peer_addresses", column_name=on_column)
                 cursor.execute(sql_query)
                 col_names = [desc[0] for desc in cursor.description]
                 rows = cursor.fetchall()
-                result = False if (len(rows) == 0) else {
-                    'column_names': col_names, 'rows': rows}
+                result = False if (len(rows) == 0) else {'column_names': col_names, 'rows': rows}
                 return result
         except lite.Error as e:
             print(e)

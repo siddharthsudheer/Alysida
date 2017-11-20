@@ -12,9 +12,9 @@ class DBStore(object):
         self._my_storage_path = storage_path
         self._fopen = fopen
 
-    def save(self, main_chain_db):
-        peer_name, db_stream = main_chain_db
-        name = '{peer_name}{ext}'.format(peer_name=peer_name, ext='.db')
+    def save(self, recv_db, filename):
+        peer_name, db_stream = recv_db
+        name = '{filename}-{peer_name}{ext}'.format(filename=filename, peer_name=peer_name, ext='.db')
         db_path = os.path.join(self._storage_save_path, name)
 
         with self._fopen(db_path, 'wb') as db_file:
@@ -25,7 +25,7 @@ class DBStore(object):
 
                 db_file.write(chunk)
 
-        return {'peer_name': peer_name, 'db_file:': name}
+        return {'peer_name': peer_name, 'db_file': name}
 
     def open(self, name):
         db_path = os.path.join(self._my_storage_path, name)

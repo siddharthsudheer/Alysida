@@ -17,6 +17,9 @@ def create_app(db_store):
     api.add_route('/register-me', server.RegisterMe())  # GET
     api.add_route('/get-peer-addresses', server.GetPeerAddresses())  # GET
 
+    api.add_route('/discover-peer-addresses', server.DiscoverPeerAddresses(db_store))  # GET
+    api.add_route('/serve-peer-addresses', server.ServePeerAddresses(db_store))  # GET
+
     api.add_route('/add-new-transaction', server.AddNewTransaction())  # POST
     api.add_route('/accept-new-transaction', server.AcceptNewTransaction())  # POST
     api.add_route('/get-unconfirmed-transactions', server.GetUnconfirmedTransactions())  # GET

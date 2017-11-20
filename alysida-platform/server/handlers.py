@@ -22,7 +22,7 @@ class Chain(object):
                 payload=None, endpoint="chain/request", request='GET')
             db_filenames = []
             for chain in peer_chains:
-                chain_obj = self._db_store.save(chain)
+                chain_obj = self._db_store.save(chain, "main_chain")
                 db_filenames.append(chain_obj)
             resp.status = falcon.HTTP_201
             resp.body = json.dumps(db_filenames)
@@ -151,6 +151,62 @@ class AddPeerAddresses(object):
 
         resp.content_type = 'application/json'
         resp.body = json.dumps(msg)
+
+
+class DiscoverPeerAddresses(object):
+    """
+        Endpoint that client will call
+        to discover new peer addresses
+        by asking other peers in network
+    """
+    def __init__(self, db_store):
+        self._db_store = db_store
+    
+    def on_get(self, req, resp):
+        peer_dbs = utils.broadcast(payload=None, endpoint="serve-peer-addresses", request='GET')
+        db_filenames = []
+        for peer_db in peer_dbs:
+            db_obj = self._db_store.save(peer_db, "peer_addresses")
+            db_filenames.append(db_obj)
+        
+        for i in db_filenames:
+            diff = DBService.compare_dbs("peer_addresses", i['db_file'], "IP")
+            if diff:
+                ips = [ i[0] for i in diff['rows'] ]
+                i['difference'] = {
+                    'column': diff['column_names'][0],
+                    'values': ips
+                }
+                peer_addrs = list(map(lambda x: (x,), ips))
+                multi_insert = "INSERT INTO peer_addresses (IP) VALUES (?)"
+
+                #post_many could be causing issue
+                db_resp = DBService.post_many("peer_addresses", multi_insert, peer_addrs)
+                if db_resp != True:
+                    # i['post_status'] = "Something went wrong while inserting difference into DB."
+                    i['post_status'] = db_resp
+                else:
+                    i['post_status'] = "The difference was inserted into DB."
+            else:
+                i['difference'] = "No Difference."
+                i['post_status'] = "Nothing was inserted into DB."
+        resp.status = falcon.HTTP_201
+        resp.body = json.dumps(db_filenames)
+
+
+class ServePeerAddresses(object):
+    """
+        Endpoint that gives my peer_addresses.db
+        to another peer in network upon request
+    """
+    def __init__(self, db_store):
+        self._db_store = db_store
+    
+    def on_get(self, req, resp):
+        resp.content_type = DB_TYPE
+        resp.stream, resp.stream_len = self._db_store.open('peer_addresses.db')
+        resp.status = falcon.HTTP_200
+
 
 class RegisterMe(object):
     """

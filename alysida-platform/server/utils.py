@@ -47,9 +47,8 @@ def broadcast(payload, endpoint, request):
             for peer in peer_nodes:
                 url = peer + endpoint
                 peer_name = urlparse(peer).netloc
-                resp = (re.sub('[^A-Za-z0-9]+', '', peer_name),
-                        requests.get(url, stream=True))
-                response.append(resp)
+                resp = (re.sub('[^A-Za-z0-9]+', '', peer_name), requests.get(url, stream=True))
+                responses.append(resp)
 
             return responses
 
