@@ -74,7 +74,7 @@ def post(dbs, user_query):
 
 def insert_into(dbs, vals):
     def _peer_addresses(vals):
-        return "INSERT INTO peer_addresses (IP) VALUES ('{}')".format(vals)
+        return "INSERT INTO peer_addresses (IP, REGISTRATION_STATUS) VALUES {}".format(vals)
 
     def _main_chain(vals):
         return "INSERT INTO main_chain (NONCE, HASH, BLOCK_DATA, TIME_STAMP) VALUES {}".format(vals)

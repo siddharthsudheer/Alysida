@@ -18,10 +18,10 @@ def broadcast(payload, endpoint, request):
               (broadcast should be only for Posting stuff to everyone)
     """
     my_ip=str(socket.gethostbyname(socket.gethostname()))
-    sql_query = "SELECT IP FROM peer_addresses WHERE IP!='{}'".format(my_ip)
+    sql_query = "SELECT IP FROM peer_addresses WHERE IP!='{}' AND REGISTRATION_STATUS!='unregistered'".format(my_ip)
     query_result = DBService.query("peer_addresses", sql_query)
     if not query_result: # if 0 results for peers addrs returned
-        response = 'No peers found. Please add peers.'
+        response = 'No registered peers found. Please add peers and/or register with them.'
         return response
     else:
         ips = query_result['rows']

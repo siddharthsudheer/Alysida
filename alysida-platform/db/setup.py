@@ -9,8 +9,8 @@ DB_SCHEMA = {
     "peer_addresses": {
         "schema": """
             CREATE TABLE IF NOT EXISTS peer_addresses (
-                IP                      VARCHAR(15),
-                PRIMARY KEY             (IP)
+                IP                      VARCHAR(15) PRIMARY KEY ON CONFLICT IGNORE,
+                REGISTRATION_STATUS     TEXT NOT NULL
             );
         """
     },
@@ -82,8 +82,9 @@ class SetupDB(object):
         num_addrs = res['rows'][0]
 
         if not num_addrs > 0:
-            core_peer_ip = self.config['CORE_PEER']['IP']
-            core_peer_insert_sql = DBService.insert_into("peer_addresses", core_peer_ip)
+            core_peer_ip = str(self.config['CORE_PEER']['IP'])
+            vals = (core_peer_ip, 'unregistered')
+            core_peer_insert_sql = DBService.insert_into("peer_addresses", vals)
             popo = DBService.post("peer_addresses", core_peer_insert_sql)
 
     def populate_my_prefs(self):
