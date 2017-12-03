@@ -1,11 +1,9 @@
-import os
 import json
 import re
 from urllib.parse import urlparse
 import socket
 import requests
 import falcon
-import hashlib
 import db.service as DBService
 
 def broadcast(payload, endpoint, request):
@@ -18,15 +16,14 @@ def broadcast(payload, endpoint, request):
               (broadcast should be only for Posting stuff to everyone)
     """
     my_ip=str(socket.gethostbyname(socket.gethostname()))
-    sql_query = "SELECT IP FROM peer_addresses WHERE IP!='{}' AND REGISTRATION_STATUS!='unregistered'".format(my_ip)
+    sql_query = "SELECT IP FROM peer_addresses WHERE IP!='{}' AND REGISTRATION_STATUS='registered'".format(my_ip)
     query_result = DBService.query("peer_addresses", sql_query)
-    if not query_result: # if 0 results for peers addrs returned
+    if not query_result: # if 0 results for registered peers addrs returned
         response = 'No registered peers found. Please add peers and/or register with them.'
         return response
     else:
         ips = query_result['rows']
         peer_nodes = list(map(lambda i: 'http://{}:4200/'.format(i), ips))
-        # peer_nodes = ['http://localhost:4201/']
 
         if request == 'POST':
             responses = list()

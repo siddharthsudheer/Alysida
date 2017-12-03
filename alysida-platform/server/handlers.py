@@ -103,7 +103,6 @@ class AddNewTransaction(object):
         resp.body = json.dumps(msg)
 
 
-
 class GetUnconfirmedTransactions(object):
     """
         Endpoint for user to see what is 
@@ -117,6 +116,7 @@ class GetUnconfirmedTransactions(object):
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_201
         resp.body = json.dumps(response)
+
 
 class RegisterMe(object):
     """
@@ -330,14 +330,9 @@ class ServePeerAddresses(object):
         self._db_store = db_store
     
     def on_get(self, req, resp):
-        # sql_query = "SELECT IP FROM peer_addresses WHERE REGISTRATION_STATUS = 'registered'"
-        # query_result = DBService.query("peer_addresses", sql_query)
         resp.content_type = DB_TYPE
         resp.stream, resp.stream_len = self._db_store.open('peer_addresses.db')
         resp.status = falcon.HTTP_200
-
-
-
 
 
 class GetPeerAddresses(object):
