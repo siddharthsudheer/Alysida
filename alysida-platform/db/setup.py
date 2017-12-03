@@ -69,8 +69,9 @@ class SetupDB(object):
             self.config = json.load(data_file)
             data_file.close()
 
-        self.populate_peer_addresses()
         self.populate_my_prefs()
+        self.populate_peer_addresses()
+        
 
     def populate_peer_addresses(self):
         """
@@ -80,12 +81,12 @@ class SetupDB(object):
         sql_query = "SELECT count(*) FROM peer_addresses"
         res = DBService.query("peer_addresses", sql_query)
         num_addrs = res['rows'][0]
-
-        if not num_addrs > 0:
-            core_peer_ip = str(self.config['CORE_PEER']['IP'])
+        my_ip = str(DBService.query("node_prefs", "SELECT IP FROM node_prefs")['rows'][0])
+        core_peer_ip = str(self.config['CORE_PEER']['IP'])
+        if not num_addrs > 0 and core_peer_ip != my_ip:
             vals = (core_peer_ip, 'unregistered')
             core_peer_insert_sql = DBService.insert_into("peer_addresses", vals)
-            popo = DBService.post("peer_addresses", core_peer_insert_sql)
+            post_res = DBService.post("peer_addresses", core_peer_insert_sql)
 
     def populate_my_prefs(self):
         """

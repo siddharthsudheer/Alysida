@@ -186,40 +186,6 @@ class RegisterMe(object):
         resp.status = final_status
         resp.body = json.dumps(msg)
 
-def add_new_peer_address(parsed, db_status):
-        peer_addrs = list(map(lambda x: (x,), parsed['ips']))
-        multi_insert = "INSERT INTO peer_addresses (IP, REGISTRATION_STATUS) VALUES (?, '{}')".format(db_status)
-        db_resp = DBService.post_many("peer_addresses", multi_insert, peer_addrs)
-        
-        if db_resp != True:
-            final_title = 'Error'
-            final_msg = db_resp
-            final_status = falcon.HTTP_500
-
-            msg = {
-                'Title': final_title,
-                'Message': final_msg
-            }
-        else:
-            # Checking if they already registered earlier but haven't been
-            # notified that they were accepted.
-            # peer_addrs_2 = tuple(parsed['ips'])
-            peer_addrs_2 = str(tuple(parsed['ips'])).replace(",)",")")
-            sql_query = "SELECT * FROM peer_addresses WHERE REGISTRATION_STATUS='registered' AND IP IN {}".format(peer_addrs_2)
-            query_result = DBService.query("peer_addresses", sql_query)
-
-            final_msg = 'Success: Successfully Added'
-            final_status = falcon.HTTP_201
-            if query_result:
-                final_msg = 'Success: Successfully Registered'
-                final_status = falcon.HTTP_200
-            
-            msg = {
-                'title': final_msg
-            }
-        return (msg, final_status)
-
-
 class AddNewRegistration(object):
     def on_post(self, req, resp):
         """
@@ -228,7 +194,7 @@ class AddNewRegistration(object):
         """
         parsed = utils.parse_post_req(req)
         resp.content_type = 'application/json'
-        msg, resp.status = add_new_peer_address(parsed, 'acceptance-pending')
+        msg, resp.status = DBService.add_new_peer_address(parsed, 'acceptance-pending')
         resp.body = json.dumps(msg)
 
 
@@ -240,7 +206,7 @@ class AddPeerAddresses(object):
         """
         parsed = utils.parse_post_req(req)
         resp.content_type = 'application/json'
-        msg, resp.status = add_new_peer_address(parsed, 'unregistered')
+        msg, resp.status = DBService.add_new_peer_address(parsed, 'unregistered')
         resp.body = json.dumps(msg)
 
 
@@ -331,7 +297,7 @@ class DiscoverPeerAddresses(object):
             db_filenames.append(db_obj)
         
         for i in db_filenames:
-            diff = DBService.compare_dbs("peer_addresses", i['db_file'], "IP")
+            diff = DBService.ip_db_diff("peer_addresses", i['db_file'])
             if diff:
                 ips = [ i[0] for i in diff['rows'] ]
                 i['difference'] = {
@@ -339,7 +305,7 @@ class DiscoverPeerAddresses(object):
                     'values': ips
                 }
                 peer_addrs = list(map(lambda x: (x,), ips))
-                multi_insert = "INSERT INTO peer_addresses (IP) VALUES (?)"
+                multi_insert = "INSERT INTO peer_addresses (IP, REGISTRATION_STATUS) VALUES (?, 'unregistered')"
 
                 #post_many could be causing issue
                 db_resp = DBService.post_many("peer_addresses", multi_insert, peer_addrs)
@@ -364,6 +330,8 @@ class ServePeerAddresses(object):
         self._db_store = db_store
     
     def on_get(self, req, resp):
+        # sql_query = "SELECT IP FROM peer_addresses WHERE REGISTRATION_STATUS = 'registered'"
+        # query_result = DBService.query("peer_addresses", sql_query)
         resp.content_type = DB_TYPE
         resp.stream, resp.stream_len = self._db_store.open('peer_addresses.db')
         resp.status = falcon.HTTP_200
@@ -380,9 +348,14 @@ class GetPeerAddresses(object):
     """
     def on_get(self, req, resp):
         sql_query = "SELECT * FROM peer_addresses"
-        results = DBService.query("peer_addresses", sql_query)['rows']
-        res_formatted = list(map(lambda i: {'peer_ip': i[0], 'status': i[1]}, results))
-        peer_ips = {'peers': res_formatted}
+        results = DBService.query("peer_addresses", sql_query)
+
+        if results:
+            res_formatted = list(map(lambda i: {'peer_ip': i[0], 'status': i[1]}, results['rows']))
+            final_msg = {'peers': res_formatted}
+        else:
+            final_msg = {'Message':'Zero peers found.','peers': []}
+        
         resp.content_type = 'application/json'
-        resp.status = falcon.HTTP_201
-        resp.body = json.dumps(dict(peer_ips))
+        resp.status = falcon.HTTP_200
+        resp.body = json.dumps(dict(final_msg))
