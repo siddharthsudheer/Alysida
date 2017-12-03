@@ -9,6 +9,7 @@ __pycache__
 
 #Databases
 db/my_dbs/
+crypt/my_certs/
 
 #System Files
 .DS_Store

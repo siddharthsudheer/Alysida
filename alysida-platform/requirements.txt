@@ -1,6 +1,4 @@
-flask
 falcon
 gunicorn
-msgpack-python
 httpie
-pytest
+pycrypto

@@ -76,7 +76,7 @@ def post(dbs, user_query):
 
 def insert_into(dbs, vals):
     def _peer_addresses(vals):
-        return "INSERT INTO peer_addresses (IP, REGISTRATION_STATUS) VALUES {}".format(vals)
+        return "INSERT INTO peer_addresses (IP, PUBLIC_KEY, REGISTRATION_STATUS) VALUES {}".format(vals)
 
     def _main_chain(vals):
         return "INSERT INTO main_chain (NONCE, HASH, BLOCK_DATA, TIME_STAMP) VALUES {}".format(vals)
@@ -103,8 +103,11 @@ def get_timestamp():
     return timestamp.strftime(timestamp_format)
 
 def add_new_peer_address(parsed, db_status):
-        peer_addrs = list(map(lambda x: (x,), parsed['ips']))
-        multi_insert = "INSERT INTO peer_addresses (IP, REGISTRATION_STATUS) VALUES (?, '{}')".format(db_status)
+        if db_status == 'acceptance-pending':
+            peer_addrs = list(map(lambda x: (x[0],x[1]), parsed['ips']))
+        else:
+            peer_addrs = list(map(lambda x: (x,'unregistered'), parsed['ips']))
+        multi_insert = "INSERT INTO peer_addresses (IP, PUBLIC_KEY, REGISTRATION_STATUS) VALUES (?, ?, '{}')".format(db_status)
         db_resp = post_many("peer_addresses", multi_insert, peer_addrs)
         
         if db_resp != True:
@@ -119,17 +122,22 @@ def add_new_peer_address(parsed, db_status):
         else:
             # Checking if they already registered earlier but haven't been
             # notified that they were accepted.
-            # peer_addrs_2 = tuple(parsed['ips'])
-            peer_addrs_2 = str(tuple(parsed['ips'])).replace(",)",")")
+            if db_status == 'acceptance-pending':
+                just_ips = list(map(lambda x: x[0], parsed['ips']))
+                peer_addrs_2 = str(tuple(just_ips)).replace(",)",")")
+            else:
+                peer_addrs_2 = str(tuple(parsed['ips'])).replace(",)",")")
             sql_query = "SELECT * FROM peer_addresses WHERE REGISTRATION_STATUS='registered' AND IP IN {}".format(peer_addrs_2)
             query_result = query("peer_addresses", sql_query)
+            print(query_result)
 
-            final_msg = 'Success: Successfully Added'
-            final_status = falcon.HTTP_201
             if query_result:
                 final_msg = 'Success: Successfully Registered'
                 final_status = falcon.HTTP_200
-            
+            else:
+                final_msg = 'Success: Successfully Added'
+                final_status = falcon.HTTP_201
+
             msg = {
                 'title': final_msg
             }

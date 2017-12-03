@@ -7,6 +7,7 @@ __pycache__
 __pycache__/
 
 alysida-platform/db/my_dbs/
+alysida-platform/crypt/my_certs/
 alysida-platform/AlysidaFile
 web-client/tmp-logs/
 

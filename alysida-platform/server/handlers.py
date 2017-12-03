@@ -5,6 +5,7 @@ import requests
 import server.utils as utils
 import db.service as DBService
 from blockchain import TransactionRecord
+from crypt.certs import Certs
 
 DB_TYPE = 'application/x-sqlite3'
 
@@ -127,7 +128,8 @@ class RegisterMe(object):
     def on_get(self, req, resp):
         sql_query = "SELECT IP FROM node_prefs"
         my_ip = str(DBService.query("node_prefs", sql_query)['rows'][0])
-        payload_to_send_peers = dict({'ips': [my_ip]})
+        my_pub_key = str(Certs().public_key)
+        payload_to_send_peers = dict({'ips': [[my_ip, my_pub_key]]})
 
         sql_query = "SELECT IP FROM peer_addresses WHERE IP!='{}' AND (REGISTRATION_STATUS=='unregistered' OR REGISTRATION_STATUS=='registration-pending')".format(my_ip)
         query_result = DBService.query("peer_addresses", sql_query)
@@ -138,7 +140,6 @@ class RegisterMe(object):
             final_status = falcon.HTTP_200
         else:
             peer_ips = query_result['rows']
-
             failed_responses = list()
             success_response_ips = list()
 
@@ -151,16 +152,28 @@ class RegisterMe(object):
                     json_resp = peer_resp.json()
                 except requests.exceptions.RequestException as e:
                     json_resp['title'] = 'Peer not reachable'
-                    print( '**{}\n**{}\n**{}'.format(json_resp['Title'], peer, e) )
+                    print( '**{}\n**{}\n**{}'.format(json_resp['title'], peer, e) )
 
                 if json_resp['title'] == "Success: Successfully Added":
                     success_response_ips.append('{}'.format(peer))
-                    update_query = "UPDATE peer_addresses SET REGISTRATION_STATUS = 'registration-pending' WHERE IP = '{}'".format(peer)
+                    update_query = "UPDATE peer_addresses SET PUBLIC_KEY = 'unreceived', REGISTRATION_STATUS = 'registration-pending' WHERE IP = '{}'".format(peer)
                     DBService.post("peer_addresses", update_query)
                 elif json_resp['title'] == "Success: Successfully Registered":
-                    success_response_ips.append('{}'.format(peer))
-                    update_query = "UPDATE peer_addresses SET REGISTRATION_STATUS = 'registered' WHERE IP = '{}'".format(peer)
-                    DBService.post("peer_addresses", update_query)
+                    update_url = 'http://{}:4200/request-registration-update'.format(peer)
+                    update_resp = dict()
+                    my_ip_payload = dict({'ip': my_ip})
+
+                    try:
+                        peer_update_resp = requests.post(update_url, data=json.dumps(my_ip_payload))
+                        update_resp = peer_update_resp.json()
+                    except requests.exceptions.RequestException as e:
+                        update_resp['title'] = 'Peer not reachable'
+                        print( '**{}\n**{}\n**{}'.format(update_resp['title'], peer, e) )
+                    
+                    if update_resp['title'] == "Success":
+                        success_response_ips.append('{}'.format(peer))
+                    else:
+                        failed_responses.append({ 'Peer': '{}'.format(peer), 'Response': update_resp })
                 else:
                     failed_responses.append({ 'Peer': '{}'.format(peer), 'Response': json_resp })
 
@@ -232,7 +245,12 @@ class AcceptNewRegistration(object):
                 accepted_peers = res['rows']
                 ip_query = "SELECT IP FROM node_prefs"
                 my_ip = DBService.query("node_prefs", ip_query)['rows'][0]
-                acceptance_msg = {'registrar_ip': '{}'.format(my_ip), 'registration_status': 'Success'}
+                my_pub_key = Certs().public_key
+                acceptance_msg = {
+                    'registrar_ip': '{}'.format(my_ip), 
+                    'registration_status': 'Success',
+                    'public_key': my_pub_key
+                    }
                 for peer in accepted_peers:
                     url = 'http://{}:4200/update-registration-status'.format(peer)
                     try:
@@ -256,7 +274,63 @@ class AcceptNewRegistration(object):
 
         resp.content_type = 'application/json'
         resp.body = json.dumps(msg)
+
+
+class RequestRegistrationUpdate(object):
+    """
+        Endpoint for one node to ask the other node
+        to send it back a public key, if it has been
+        accepted.
+    """
+    def on_post(self, req, resp):
+        peer_addr = str(utils.parse_post_req(req)['ip'])
+        sql_query = "SELECT REGISTRATION_STATUS FROM peer_addresses WHERE IP = '{}'".format(peer_addr)
+        res = DBService.query("peer_addresses", sql_query)
+        print(res)
+        if res:
+            peer_status = str(res['rows'][0])
+            print(peer_status)
+            if peer_status == "registered":
+                final_title = 'Success'
+                final_msg = 'Okay. Attempting to send you my Info.'
+                resp.status = falcon.HTTP_200
+
+                ip_query = "SELECT IP FROM node_prefs"
+                my_ip = DBService.query("node_prefs", ip_query)['rows'][0]
+                my_pub_key = Certs().public_key
+                acceptance_msg = {
+                    'registrar_ip': '{}'.format(my_ip), 
+                    'registration_status': 'Success',
+                    'public_key': my_pub_key
+                    }
+                url = 'http://{}:4200/update-registration-status'.format(peer_addr)
+
+                try:
+                    peer_resp = requests.post(url, data=json.dumps(acceptance_msg))
+                except requests.exceptions.RequestException as e:
+                    err_msg = 'Peer not reachable'
+                    print( '**{}\n**{}\n**{}'.format(err_msg, peer, e) )
+
+            elif peer_status == "acceptance-pending":
+                final_title = 'In Progress'
+                final_msg = 'You are yet to be accepted.'
+                resp.status = falcon.HTTP_202
+            else:
+                final_title = 'Error'
+                final_msg = 'Something is not right!'
+                resp.status = falcon.HTTP_500
+        else:
+            final_title = 'Error'
+            final_msg = 'Unauthorized. You seem like a fishy person!'
+            resp.status = falcon.HTTP_401
         
+        msg = {
+            'title': str(final_title),
+            'message': str(final_msg)
+        }
+        resp.content_type = 'application/json'
+        resp.body = json.dumps(dict(msg))
+
 
 class UpdateRegistrationStatus(object):
     def on_post(self, req, resp):
@@ -264,10 +338,10 @@ class UpdateRegistrationStatus(object):
             Endpoint that the peers use to 
             respond to client's registration
         """
-        rec_payload = utils.parse_post_req(req)
+        recv_payload = utils.parse_post_req(req)
 
-        if rec_payload['registration_status'] == 'Success':
-            update_query = "UPDATE peer_addresses SET REGISTRATION_STATUS = 'registered' WHERE IP = '{}'".format(rec_payload['registrar_ip'])
+        if recv_payload['registration_status'] == 'Success':
+            update_query = "UPDATE peer_addresses SET PUBLIC_KEY = '{}', REGISTRATION_STATUS = 'registered' WHERE IP = '{}'".format(recv_payload['public_key'], recv_payload['registrar_ip'])
             db_resp = DBService.post("peer_addresses", update_query)
 
             msg = {
@@ -305,12 +379,10 @@ class DiscoverPeerAddresses(object):
                     'values': ips
                 }
                 peer_addrs = list(map(lambda x: (x,), ips))
-                multi_insert = "INSERT INTO peer_addresses (IP, REGISTRATION_STATUS) VALUES (?, 'unregistered')"
+                multi_insert = "INSERT INTO peer_addresses (IP, PUBLIC_KEY, REGISTRATION_STATUS) VALUES (?, 'unregistered', 'unregistered')"
 
-                #post_many could be causing issue
                 db_resp = DBService.post_many("peer_addresses", multi_insert, peer_addrs)
                 if db_resp != True:
-                    # i['post_status'] = "Something went wrong while inserting difference into DB."
                     i['post_status'] = db_resp
                 else:
                     i['post_status'] = "The difference was inserted into DB."
@@ -346,7 +418,7 @@ class GetPeerAddresses(object):
         results = DBService.query("peer_addresses", sql_query)
 
         if results:
-            res_formatted = list(map(lambda i: {'peer_ip': i[0], 'status': i[1]}, results['rows']))
+            res_formatted = list(map(lambda i: {'peer_ip': i[0], 'pub_key': i[1], 'status': i[2]}, results['rows']))
             final_msg = {'peers': res_formatted}
         else:
             final_msg = {'Message':'Zero peers found.','peers': []}
@@ -354,3 +426,39 @@ class GetPeerAddresses(object):
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(dict(final_msg))
+
+
+class TestRoute(object):
+    def on_get(self, req, resp):
+        payload = {
+            'Title': 'Hello'
+        }
+        url = 'http://10.0.0.104:4200/test-route'
+        resp = requests.post(url, data=json.dumps(payload))
+
+        msg = {
+            'Title': 'Success',
+            'Msg': resp.json()
+        }
+        resp.content_type = 'application/json'
+        resp.status = falcon.HTTP_201
+        resp.body = json.dumps(msg)
+
+
+    def on_post(self, req, resp):
+        recv = utils.parse_post_req(req)
+        forwarded_host = str(req.forwarded_host)
+        host = str(req.host)
+        headers = str(req.headers)
+        extras = "forwarded_host: {}; host: {}; headers {}".format(forwarded_host, host, headers)
+        
+        print(extras)
+        msg = {
+            'Title': 'Success',
+            'Message': str(recv),
+            'Extras': extras
+        } 
+
+        resp.content_type = 'application/json'
+        resp.status = falcon.HTTP_200
+        resp.body = json.dumps(msg)

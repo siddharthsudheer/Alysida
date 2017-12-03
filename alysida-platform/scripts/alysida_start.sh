@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MY_UUID="$(uuidgen)"
+MY_UUID="$(./scripts/uuidgen.py)"
 
 if [ ! $MY_UUID == "" ]; then
     NODE_CONFIG=$(cat ./AlysidaFile | sed -e s/MY_UUID/$MY_UUID/g)
@@ -8,5 +8,5 @@ if [ ! $MY_UUID == "" ]; then
 fi
 
 
-
+./scripts/cryptogen.py
 gunicorn --config gunicorn.conf -b 0.0.0.0:4200 'app:start_alysida()' 

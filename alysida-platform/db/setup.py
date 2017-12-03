@@ -10,6 +10,7 @@ DB_SCHEMA = {
         "schema": """
             CREATE TABLE IF NOT EXISTS peer_addresses (
                 IP                      VARCHAR(15) PRIMARY KEY ON CONFLICT IGNORE,
+                PUBLIC_KEY              TEXT NOT NULL,
                 REGISTRATION_STATUS     TEXT NOT NULL
             );
         """
@@ -84,9 +85,10 @@ class SetupDB(object):
         my_ip = str(DBService.query("node_prefs", "SELECT IP FROM node_prefs")['rows'][0])
         core_peer_ip = str(self.config['CORE_PEER']['IP'])
         if not num_addrs > 0 and core_peer_ip != my_ip:
-            vals = (core_peer_ip, 'unregistered')
+            vals = (core_peer_ip, 'unregistered', 'unregistered')
             core_peer_insert_sql = DBService.insert_into("peer_addresses", vals)
             post_res = DBService.post("peer_addresses", core_peer_insert_sql)
+
 
     def populate_my_prefs(self):
         """
@@ -95,12 +97,12 @@ class SetupDB(object):
         """
         sql_query = "SELECT * FROM node_prefs"
         res = DBService.query("node_prefs", sql_query)
-        
+
         try:
             my_ip = socket.gethostbyname(socket.gethostname())
         except:
             my_ip = socket.gethostname()
-       
+
         vals = (self.config['UUID'], my_ip, self.config['MY_PREFERENCES'])
 
         def _insert_config_info():
@@ -110,7 +112,7 @@ class SetupDB(object):
         if not res:
             # If no info in DB
             _insert_config_info()
-        elif res['rows'][0] != vals:
+        elif tuple(res['rows'][0]) != vals:
             # If info doesnt match
             delete_sql = "DELETE FROM node_prefs WHERE IP='{}'".format(my_ip)
             DBService.post("node_prefs", delete_sql)
