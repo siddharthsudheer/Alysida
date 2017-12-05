@@ -41,7 +41,7 @@ def post_many(dbs, user_query, ls=None):
             with conn:
                 cursor = conn.cursor()
                 cursor.execute("PRAGMA foreign_keys = ON;")
-                if ls==None:
+                if ls == None:
                     cursor.executescript(user_query)
                 else:
                     conn.executemany(user_query, ls)
@@ -85,14 +85,27 @@ def post(dbs, user_query):
 def insert_into(dbs, vals):
     if dbs == "peer_addresses": 
         return "INSERT INTO peer_addresses (IP, PUBLIC_KEY, REGISTRATION_STATUS) VALUES {}".format(vals)
-    elif dbs == "main_chain": 
-        return "INSERT INTO main_chain (NONCE, HASH, BLOCK_DATA, TIME_STAMP) VALUES {}".format(vals)
+
+    elif dbs == "main_chain":
+        block_hash, nonce, time_stamp, txns = vals
+        txn_inserts = list()
+        main_chain = "INSERT INTO main_chain (BLOCK_NUM, BLOCK_HASH, NONCE, TIME_STAMP) VALUES (NULL,'{}',{},'{}');".format(block_hash, nonce, time_stamp)
+        for txn in txns:
+            ins_vals = (block_hash, txn['hash'], txn['txn_data']['sender'], txn['txn_data']['receiver'], txn['txn_data']['amount'], txn['time_stamp'])
+            ins = "INSERT INTO confirmed_txns (BLOCK_HASH, TXN_HASH, sender, receiver, amount, TXN_TIME_STAMP) VALUES {};".format(ins_vals)
+            txn_inserts.append(ins)
+        confirmed_txns = '{}'.format(''.join(map(str, txn_inserts))) 
+        final = main_chain + "\n" + confirmed_txns
+        print(final)
+        return final
+
     elif dbs == "unconfirmed_pool": 
         txn_hash, sender, recv, amt, time_stamp = vals
         transaction_recs = "INSERT INTO transaction_recs (HASH, sender, receiver, amount) VALUES {};".format((txn_hash, sender, recv, amt))
         unconfirmed_pool = "INSERT INTO unconfirmed_pool (HASH, TIME_STAMP) VALUES {};".format((txn_hash, time_stamp))
         final = transaction_recs + "\n" + unconfirmed_pool
         return final
+
     elif dbs == "node_prefs": 
         return "INSERT INTO node_prefs (UUID, IP, PREFERENCES) VALUES {}".format(vals)
 
@@ -108,6 +121,7 @@ def add_new_peer_address(parsed, db_status):
             peer_addrs = list(map(lambda x: (x[0],x[1]), parsed['ips']))
         else:
             peer_addrs = list(map(lambda x: (x,'unregistered'), parsed['ips']))
+        
         multi_insert = "INSERT INTO peer_addresses (IP, PUBLIC_KEY, REGISTRATION_STATUS) VALUES (?, ?, '{}')".format(db_status)
         db_resp = post_many("peer_addresses", multi_insert, peer_addrs)
         

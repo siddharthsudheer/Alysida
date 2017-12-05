@@ -3,7 +3,7 @@ import os
 import json
 import socket
 import db.service as DBService
-
+# from blockchain import Blockchain
 
 DB_SCHEMA = {
     "peer_addresses": {
@@ -18,12 +18,24 @@ DB_SCHEMA = {
     "main_chain": {
         "schema": """
             CREATE TABLE IF NOT EXISTS main_chain (
-                BLOCK_ID                INTEGER,
+                BLOCK_NUM               INTEGER PRIMARY KEY AUTOINCREMENT,
+                BLOCK_HASH              VARCHAR(64),
                 NONCE                   INTEGER,
-                HASH                    VARCHAR(64),
-                BLOCK_DATA              TEXT,
                 TIME_STAMP              TIMESTAMP,
-                PRIMARY KEY             (BLOCK_ID)
+                UNIQUE                  (BLOCK_HASH),
+                UNIQUE                  (NONCE)
+            );
+        """,
+        "schema2": """
+            CREATE TABLE IF NOT EXISTS confirmed_txns (
+                BLOCK_HASH              VARCHAR(64),
+                TXN_HASH                VARCHAR(64),
+                sender                  TEXT,
+                receiver                TEXT,
+                amount                  REAL,
+                TXN_TIME_STAMP          TIMESTAMP,
+                PRIMARY KEY             (TXN_HASH)
+                FOREIGN KEY (BLOCK_HASH) REFERENCES main_chain(BLOCK_HASH)
             );
         """
     },
@@ -32,7 +44,7 @@ DB_SCHEMA = {
             CREATE TABLE IF NOT EXISTS transaction_recs (
                 HASH                    VARCHAR(64),
                 sender                  TEXT,
-                receiver                TIMESTAMP,
+                receiver                TEXT,
                 amount                  REAL,
                 PRIMARY KEY             (HASH)
             );
@@ -83,6 +95,7 @@ class SetupDB(object):
 
         self.populate_my_prefs()
         self.populate_peer_addresses()
+        self.add_genesis_block()
         
 
     def populate_peer_addresses(self):
@@ -128,3 +141,17 @@ class SetupDB(object):
             delete_sql = "DELETE FROM node_prefs WHERE IP='{}'".format(my_ip)
             DBService.post("node_prefs", delete_sql)
             _insert_config_info()
+
+
+    def add_genesis_block(self):
+        """
+            If main_chain db is empty generate 
+            and add genesis block.
+        """
+        pass
+        # blockchain = Blockchain()
+        # if not blockchain.length > 0:
+        #     print("Nothing in Chain. Generating genesis block.")
+        #     blockchain.generate_genesis_block()
+
+        

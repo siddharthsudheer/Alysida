@@ -6,6 +6,7 @@ from db.store import DBStore
 from db.setup import SetupDB
 import db.service as DBService
 from crypt.certs import Certs
+# from blockchain import Blockchain
 
 SetupDB(DBService)
 
@@ -38,3 +39,9 @@ def start_alysida():
     storage_path = os.environ.get('DB_STORAGE_PATH', './db/my_dbs')
     db_store = DBStore(storage_path)
     return create_app(db_store)
+
+# blockchain = Blockchain()
+# # txns = ['e8de0abe96f20c20a531489c77f7692b68e83af3a55dd51a5ace121c5dac9bef', '295e6a00e15a16428392015954c9166274cf2544bec2135fcdc7194d1f884a17', '3a95ea8c7ad05d21db0e0e90b693dbded399f27639951bb2a8587a9f404491c1']
+# # blockchain.new_block(txns)
+# x = blockchain.check_block_validity('00ad35f33dc2bc4f98a1f149ea5b112745d0f19c066be1320a7e8c3d87a61e27')
+# print(x)

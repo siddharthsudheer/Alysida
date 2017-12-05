@@ -4,8 +4,8 @@ import falcon
 import requests
 import server.utils as utils
 import db.service as DBService
-from blockchain import TransactionRecord
 from crypt.certs import Certs
+from bloc.transaction import Transaction
 
 DB_TYPE = 'application/x-sqlite3'
 
@@ -44,12 +44,14 @@ class AcceptNewTransaction(object):
             made by peer on network
         """
         results = utils.parse_post_req(req)['new_txn']
-        txn_hash, txn_data, txn_timestamp = tuple([v for k,v in results.items()])
-        print(txn_data)
-        txn_data = json.loads(json.dumps(txn_data))
-        txn_record_vals = (txn_hash, txn_data['sender'], txn_data['receiver'], txn_data['amount'], txn_timestamp)
-        final_title, final_msg, resp_status = DBService.add_txn_to_db(txn_record_vals)
+        txn_rec = Transaction()
+        txn_rec.to_obj(results)
 
+        if txn_rec.is_valid():
+            final_title, final_msg, resp_status = txn_rec.add_to_unconfirmed_pool()
+        else:
+            final_title, final_msg, resp_status = "Invalid", "Transaction hash not valid", falcon.HTTP_400
+        
         msg = {
             'Title': final_title,
             'Message': final_msg,
@@ -68,17 +70,17 @@ class AddNewTransaction(object):
             to add their new transaction
         """
         payload = utils.parse_post_req(req)
-        txn_rec = TransactionRecord(payload)
-        txn_record_vals = txn_rec.generate_vals()
-        final_title, final_msg, resp_status = DBService.add_txn_to_db(txn_record_vals)
+        txn_rec = Transaction(sender=payload['sender'], receiver=payload['receiver'], amount=payload['amount'])
+        txn_rec.create()
+        final_title, final_msg, resp_status = txn_rec.add_to_unconfirmed_pool()
 
-        jsonified = {'new_txn': txn_rec.json_format()}
-        responses = utils.broadcast(payload=jsonified, endpoint="accept-new-transaction", request='POST')
+        send_payload = {'new_txn': txn_rec.gen_dict()}
+        responses = utils.broadcast(payload=send_payload, endpoint="accept-new-transaction", request='POST')
 
         msg = {
             'Title': final_title,
             'Message': final_msg,
-            'Txn_data': jsonified,
+            'Txn_data': send_payload,
             'peer_responses': responses
         }
 
