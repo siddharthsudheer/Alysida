@@ -146,36 +146,3 @@ class Blockchain(object):
             print(" ")
         print("---------------------------------------------------------------------------------------\n")
         print("===================================================================================================\n")
-
-
-class TransactionRecord(object):
-    def __init__(self, txn_data):
-        self.txn_data = txn_data
-        self.timestamp = DBService.get_timestamp()
-        self.hash = '{}'.format(self.get_hash())
-
-    def generate_vals(self):
-        vals = (self.hash, self.txn_data['sender'], self.txn_data['receiver'], self.txn_data['amount'], self.timestamp)
-        return vals
-
-    def get_hash(self):
-        """
-        Creates a SHA-256 hash of a Transaction
-        """
-        data = {
-            'txn_data': '{}'.format(self.txn_data),
-            'time_stamp': '{}'.format(self.timestamp)
-        }
-
-        # We must make sure that the Dictionary is Ordered, or we'll have inconsistent hashes
-        data_string = json.dumps(data, sort_keys=True).encode()
-        return hashlib.sha256(data_string).hexdigest()
-    
-    def json_format(self):
-        data = {
-            "hash": self.hash,
-            "txn_data": self.txn_data,
-            "time_stamp": '{}'.format(self.timestamp)
-        }
-
-        return data

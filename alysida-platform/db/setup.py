@@ -3,7 +3,9 @@ import os
 import json
 import socket
 import db.service as DBService
-# from blockchain import Blockchain
+from bloc.block import Block
+from bloc.transaction import Transaction
+from bloc.chain import Chain
 
 DB_SCHEMA = {
     "peer_addresses": {
@@ -19,7 +21,7 @@ DB_SCHEMA = {
         "schema": """
             CREATE TABLE IF NOT EXISTS main_chain (
                 BLOCK_NUM               INTEGER PRIMARY KEY AUTOINCREMENT,
-                BLOCK_HASH              VARCHAR(64),
+                BLOCK_HASH              VARCHAR(66),
                 NONCE                   INTEGER,
                 TIME_STAMP              TIMESTAMP,
                 UNIQUE                  (BLOCK_HASH),
@@ -28,8 +30,8 @@ DB_SCHEMA = {
         """,
         "schema2": """
             CREATE TABLE IF NOT EXISTS confirmed_txns (
-                BLOCK_HASH              VARCHAR(64),
-                TXN_HASH                VARCHAR(64),
+                BLOCK_HASH              VARCHAR(66),
+                TXN_HASH                VARCHAR(66),
                 sender                  TEXT,
                 receiver                TEXT,
                 amount                  REAL,
@@ -41,20 +43,13 @@ DB_SCHEMA = {
     },
     "unconfirmed_pool": {
         "schema": """
-            CREATE TABLE IF NOT EXISTS transaction_recs (
-                HASH                    VARCHAR(64),
+            CREATE TABLE IF NOT EXISTS unconfirmed_pool (
+                TXN_HASH                VARCHAR(66),
+                TXN_TIME_STAMP          TIMESTAMP,
                 sender                  TEXT,
                 receiver                TEXT,
                 amount                  REAL,
-                PRIMARY KEY             (HASH)
-            );
-        """,
-        "schema2": """
-            CREATE TABLE IF NOT EXISTS unconfirmed_pool (
-                HASH                    VARCHAR(64),
-                TIME_STAMP              TIMESTAMP,
-                PRIMARY KEY             (HASH),
-                FOREIGN KEY (HASH) REFERENCES transaction_recs(HASH)
+                PRIMARY KEY             (TXN_HASH)
             );
         """
     },
@@ -148,10 +143,15 @@ class SetupDB(object):
             If main_chain db is empty generate 
             and add genesis block.
         """
-        pass
-        # blockchain = Blockchain()
-        # if not blockchain.length > 0:
-        #     print("Nothing in Chain. Generating genesis block.")
-        #     blockchain.generate_genesis_block()
+        blockchain = Chain()
+        if not blockchain.length > 0:
+            print("\nNothing in Chain. Generating genesis block.")
+            genesis_txn = Transaction(sender='genesis', receiver='genesis', amount=0)
+            genesis_txn.create()
+            genesis_hash = genesis_txn.gen_dict()['txn_hash']
 
-        
+            genesis_block = Block(txn_hashes=[genesis_hash], txn_recs=[genesis_txn], prev_block_hash='0')
+            genesis_block = blockchain.add_new_block(genesis_block)
+            print("\nGenesis Block Validity: ", genesis_block.is_valid())
+            g = genesis_block.gen_dict()
+            print("\n{}\n".format(json.dumps(g, indent=4, sort_keys=True)))

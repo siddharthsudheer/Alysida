@@ -1,3 +1,3 @@
 #!/usr/bin/env python3
 
-__all__ = ['chain', 'transaction']
+__all__ = ['chain', 'transaction', 'block']

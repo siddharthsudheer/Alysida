@@ -159,10 +159,43 @@ def add_new_peer_address(parsed, db_status):
         return (msg, final_status)
 
 
-def get_size(dbs, sql_query, in_downloads=False):
-    result = query(dbs, sql_query, in_downloads=in_downloads)
-    final = 0 if not result else result['rows'][0]
-    return final
+def ip_db_diff(my_db, their_db):
+    my_db_path = DB_PATH + my_db + '.db'
+    their_db_path = DB_DOWNLOADS_PATH + their_db
+    my_ip = str(query("node_prefs", "SELECT IP FROM node_prefs")['rows'][0])
+    try:
+        conn = lite.connect(their_db_path)
+        try:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute("ATTACH DATABASE '{}' AS my_db".format(my_db_path))
+                sql_query = """
+                    SELECT IP
+                    FROM peer_addresses as peer
+                    WHERE (REGISTRATION_STATUS='registered' OR REGISTRATION_STATUS='registration-pending')
+                        AND (
+                            IP NOT IN (SELECT IP FROM my_db.peer_addresses)
+                            AND
+                            IP != '{my_ip_addr}'
+                        )
+                """.format(my_ip_addr=my_ip)
+                cursor.execute(sql_query)
+                col_names = [desc[0] for desc in cursor.description]
+                rows = cursor.fetchall()
+                result = False if (len(rows) == 0) else {'column_names': col_names, 'rows': rows}
+                return result
+        except lite.Error as e:
+            print(e)
+    except lite.OperationalError as e:
+        print(e)
+    finally:
+        conn.close()
+        os.remove(their_db_path)
+
+# def get_size(dbs, sql_query, in_downloads=False):
+#     result = query(dbs, sql_query, in_downloads=in_downloads)
+#     final = 0 if not result else result['rows'][0]
+#     return final
 
 # def compare_dbs(my_db, their_db, on_column):
 #     size_query = "SELECT COUNT(*) FROM {}".format(my_db)
@@ -199,51 +232,4 @@ def get_size(dbs, sql_query, in_downloads=False):
 #     finally:
 #         conn.close()
 
-def ip_db_diff(my_db, their_db):
-    my_db_path = DB_PATH + my_db + '.db'
-    their_db_path = DB_DOWNLOADS_PATH + their_db
-    my_ip = str(query("node_prefs", "SELECT IP FROM node_prefs")['rows'][0])
-    try:
-        conn = lite.connect(their_db_path)
-        try:
-            with conn:
-                cursor = conn.cursor()
-                cursor.execute("ATTACH DATABASE '{}' AS my_db".format(my_db_path))
-                sql_query = """
-                    SELECT IP
-                    FROM peer_addresses as peer
-                    WHERE (REGISTRATION_STATUS='registered' OR REGISTRATION_STATUS='registration-pending')
-                        AND (
-                            IP NOT IN (SELECT IP FROM my_db.peer_addresses)
-                            AND
-                            IP != '{my_ip_addr}'
-                        )
-                """.format(my_ip_addr=my_ip)
-                cursor.execute(sql_query)
-                col_names = [desc[0] for desc in cursor.description]
-                rows = cursor.fetchall()
-                result = False if (len(rows) == 0) else {'column_names': col_names, 'rows': rows}
-                return result
-        except lite.Error as e:
-            print(e)
-    except lite.OperationalError as e:
-        print(e)
-    finally:
-        conn.close()
-        os.remove(their_db_path)
 
-
-def add_txn_to_db(txn_record_vals):
-    insert_sql = insert_into("unconfirmed_pool", txn_record_vals)
-    db_resp = post_many("unconfirmed_pool", insert_sql)
-
-    if db_resp != True:
-        final_title = 'Error'
-        final_msg = db_resp
-        resp_status = falcon.HTTP_400
-    else:
-        final_title = 'Success'
-        final_msg = 'New transaction successfully added to DB.'
-        resp_status = falcon.HTTP_201
-    
-    return (final_title, final_msg, resp_status)

@@ -95,7 +95,7 @@ class GetUnconfirmedTransactions(object):
         in the unconfirmed txns pool
     """
     def on_get(self, req, resp):
-        sql_query = "SELECT HASH, TIME_STAMP, sender, receiver, amount FROM unconfirmed_pool NATURAL JOIN transaction_recs"
+        sql_query = "SELECT * FROM unconfirmed_pool"
         result = DBService.query("unconfirmed_pool", sql_query)
         unconfirmed_txns = [ dict(zip( result['column_names'], txn )) for txn in result['rows'] ] if result else []
         response = {'unconfirmed_txns': unconfirmed_txns}
