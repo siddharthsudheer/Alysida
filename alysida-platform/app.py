@@ -14,24 +14,22 @@ def create_app(db_store):
     api.add_route('/chain/{action}', server.Chain(db_store))  # GET
 
 
+    # Client-Facing Routes
     api.add_route('/add-peer-addresses', server.AddPeerAddresses())  # POST
     api.add_route('/register-me', server.RegisterMe())  # GET
     api.add_route('/get-peer-addresses', server.GetPeerAddresses())  # GET
+    api.add_route('/discover-peer-addresses', server.DiscoverPeerAddresses(db_store))  # GET
+    api.add_route('/add-new-transaction', server.AddNewTransaction())  # POST
+    api.add_route('/get-unconfirmed-transactions', server.GetUnconfirmedTransactions())  # GET
 
+    # Internal Routes
     api.add_route('/new-registration', server.AddNewRegistration())  # POST
     api.add_route('/accept-new-registration', server.AcceptNewRegistration())  # POST
     api.add_route('/update-registration-status', server.UpdateRegistrationStatus())  # POST
     api.add_route('/request-registration-update', server.RequestRegistrationUpdate())  # POST
-
-    api.add_route('/discover-peer-addresses', server.DiscoverPeerAddresses(db_store))  # GET
     api.add_route('/serve-peer-addresses', server.ServePeerAddresses(db_store))  # GET
-
-    api.add_route('/add-new-transaction', server.AddNewTransaction())  # POST
     api.add_route('/accept-new-transaction', server.AcceptNewTransaction())  # POST
-    api.add_route('/get-unconfirmed-transactions', server.GetUnconfirmedTransactions())  # GET
-
-    api.add_route('/test-route', server.TestRoute())  # GET & POST
-
+    
 
     return api
 

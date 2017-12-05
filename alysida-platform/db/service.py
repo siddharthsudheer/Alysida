@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import json
 import sqlite3 as lite
 import datetime as date
 import falcon
@@ -16,6 +17,7 @@ def query(dbs, user_query, in_downloads=False):
         try:
             with conn:
                 cursor = conn.cursor()
+                cursor.execute("PRAGMA foreign_keys = ON;")
                 cursor.execute(user_query)
                 col_names = [desc[0] for desc in cursor.description]
                 rows = cursor.fetchall()
@@ -31,13 +33,18 @@ def query(dbs, user_query, in_downloads=False):
     finally:
         return resp
 
-def post_many(dbs, user_query, ls):
+def post_many(dbs, user_query, ls=None):
     try:
         db_path = DB_PATH + dbs + '.db'
         conn = lite.connect(db_path)
         try:
             with conn:
-                conn.executemany(user_query, ls)
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA foreign_keys = ON;")
+                if ls==None:
+                    cursor.executescript(user_query)
+                else:
+                    conn.executemany(user_query, ls)
                 resp = True
         except lite.Error as e:
             conn.rollback()
@@ -59,6 +66,7 @@ def post(dbs, user_query):
         try:
             with conn:
                 cursor = conn.cursor()
+                cursor.execute("PRAGMA foreign_keys = ON;")
                 cursor.execute(user_query)
                 conn.commit()
                 resp = True
@@ -75,32 +83,25 @@ def post(dbs, user_query):
 
 
 def insert_into(dbs, vals):
-    def _peer_addresses(vals):
+    if dbs == "peer_addresses": 
         return "INSERT INTO peer_addresses (IP, PUBLIC_KEY, REGISTRATION_STATUS) VALUES {}".format(vals)
-
-    def _main_chain(vals):
+    elif dbs == "main_chain": 
         return "INSERT INTO main_chain (NONCE, HASH, BLOCK_DATA, TIME_STAMP) VALUES {}".format(vals)
-
-    def _unconfirmed_pool(vals):
-        return "INSERT INTO unconfirmed_pool (HASH, TXN_DATA, TIME_STAMP) VALUES {}".format(vals)
-
-    def _my_node_info(vals):
+    elif dbs == "unconfirmed_pool": 
+        txn_hash, sender, recv, amt, time_stamp = vals
+        transaction_recs = "INSERT INTO transaction_recs (HASH, sender, receiver, amount) VALUES {};".format((txn_hash, sender, recv, amt))
+        unconfirmed_pool = "INSERT INTO unconfirmed_pool (HASH, TIME_STAMP) VALUES {};".format((txn_hash, time_stamp))
+        final = transaction_recs + "\n" + unconfirmed_pool
+        return final
+    elif dbs == "node_prefs": 
         return "INSERT INTO node_prefs (UUID, IP, PREFERENCES) VALUES {}".format(vals)
-
-    options = {
-        'peer_addresses': _peer_addresses(vals),
-        'main_chain': _main_chain(vals),
-        'unconfirmed_pool': _unconfirmed_pool(vals),
-        'node_prefs': _my_node_info(vals)
-    }
-
-    return options[dbs]
 
 
 def get_timestamp():
     timestamp_format = '%Y-%m-%d %H:%M:%S'
     timestamp = date.datetime.now()
     return timestamp.strftime(timestamp_format)
+
 
 def add_new_peer_address(parsed, db_status):
         if db_status == 'acceptance-pending':
@@ -142,6 +143,7 @@ def add_new_peer_address(parsed, db_status):
                 'title': final_msg
             }
         return (msg, final_status)
+
 
 def get_size(dbs, sql_query, in_downloads=False):
     result = query(dbs, sql_query, in_downloads=in_downloads)
@@ -215,3 +217,19 @@ def ip_db_diff(my_db, their_db):
     finally:
         conn.close()
         os.remove(their_db_path)
+
+
+def add_txn_to_db(txn_record_vals):
+    insert_sql = insert_into("unconfirmed_pool", txn_record_vals)
+    db_resp = post_many("unconfirmed_pool", insert_sql)
+
+    if db_resp != True:
+        final_title = 'Error'
+        final_msg = db_resp
+        resp_status = falcon.HTTP_400
+    else:
+        final_title = 'Success'
+        final_msg = 'New transaction successfully added to DB.'
+        resp_status = falcon.HTTP_201
+    
+    return (final_title, final_msg, resp_status)

@@ -37,7 +37,6 @@ class Chain(object):
             raise falcon.HTTPError(falcon.HTTP_400, 'Incorrect Endpoint Used.')
 
 
-
 class AcceptNewTransaction(object):
     def on_post(self, req, resp):
         """
@@ -45,27 +44,21 @@ class AcceptNewTransaction(object):
             made by peer on network
         """
         results = utils.parse_post_req(req)['new_txn']
-        txn_record_vals = tuple([str(v) for k,v in results.items()])
-        insert_sql = DBService.insert_into("unconfirmed_pool", txn_record_vals)
-        db_resp = DBService.post("unconfirmed_pool", insert_sql)
-        db_resp = True
-        if db_resp != True:
-            final_title = 'Error'
-            final_msg = db_resp
-            resp.status = falcon.HTTP_400
-        else:
-            final_title = 'Success'
-            final_msg = 'New transaction successfully added to DB.'
-            resp.status = falcon.HTTP_201
+        txn_hash, txn_data, txn_timestamp = tuple([v for k,v in results.items()])
+        print(txn_data)
+        txn_data = json.loads(json.dumps(txn_data))
+        txn_record_vals = (txn_hash, txn_data['sender'], txn_data['receiver'], txn_data['amount'], txn_timestamp)
+        final_title, final_msg, resp_status = DBService.add_txn_to_db(txn_record_vals)
 
         msg = {
             'Title': final_title,
             'Message': final_msg,
             'Txn_data': results
         }
-        resp.content_type = 'application/json'
-        resp.body = json.dumps(msg)
 
+        resp.content_type = 'application/json'
+        resp.status = resp_status
+        resp.body = json.dumps(msg)
 
 
 class AddNewTransaction(object):
@@ -76,19 +69,8 @@ class AddNewTransaction(object):
         """
         payload = utils.parse_post_req(req)
         txn_rec = TransactionRecord(payload)
-        txn_record_vals = txn_rec.generate()
-
-        insert_sql = DBService.insert_into("unconfirmed_pool", txn_record_vals)
-        db_resp = DBService.post("unconfirmed_pool", insert_sql)
-
-        if db_resp != True:
-            final_title = 'Error'
-            final_msg = db_resp
-            resp.status = falcon.HTTP_400
-        else:
-            final_title = 'Success'
-            final_msg = 'New transaction successfully added to DB.'
-            resp.status = falcon.HTTP_201
+        txn_record_vals = txn_rec.generate_vals()
+        final_title, final_msg, resp_status = DBService.add_txn_to_db(txn_record_vals)
 
         jsonified = {'new_txn': txn_rec.json_format()}
         responses = utils.broadcast(payload=jsonified, endpoint="accept-new-transaction", request='POST')
@@ -101,6 +83,7 @@ class AddNewTransaction(object):
         }
 
         resp.content_type = 'application/json'
+        resp.status = resp_status
         resp.body = json.dumps(msg)
 
 
@@ -110,12 +93,12 @@ class GetUnconfirmedTransactions(object):
         in the unconfirmed txns pool
     """
     def on_get(self, req, resp):
-        sql_query = "SELECT * FROM unconfirmed_pool"
+        sql_query = "SELECT HASH, TIME_STAMP, sender, receiver, amount FROM unconfirmed_pool NATURAL JOIN transaction_recs"
         result = DBService.query("unconfirmed_pool", sql_query)
         unconfirmed_txns = [ dict(zip( result['column_names'], txn )) for txn in result['rows'] ] if result else []
         response = {'unconfirmed_txns': unconfirmed_txns}
         resp.content_type = 'application/json'
-        resp.status = falcon.HTTP_201
+        resp.status = falcon.HTTP_200
         resp.body = json.dumps(response)
 
 
@@ -426,39 +409,3 @@ class GetPeerAddresses(object):
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(dict(final_msg))
-
-
-class TestRoute(object):
-    def on_get(self, req, resp):
-        payload = {
-            'Title': 'Hello'
-        }
-        url = 'http://10.0.0.104:4200/test-route'
-        resp = requests.post(url, data=json.dumps(payload))
-
-        msg = {
-            'Title': 'Success',
-            'Msg': resp.json()
-        }
-        resp.content_type = 'application/json'
-        resp.status = falcon.HTTP_201
-        resp.body = json.dumps(msg)
-
-
-    def on_post(self, req, resp):
-        recv = utils.parse_post_req(req)
-        forwarded_host = str(req.forwarded_host)
-        host = str(req.host)
-        headers = str(req.headers)
-        extras = "forwarded_host: {}; host: {}; headers {}".format(forwarded_host, host, headers)
-        
-        print(extras)
-        msg = {
-            'Title': 'Success',
-            'Message': str(recv),
-            'Extras': extras
-        } 
-
-        resp.content_type = 'application/json'
-        resp.status = falcon.HTTP_200
-        resp.body = json.dumps(msg)

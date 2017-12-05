@@ -29,11 +29,20 @@ DB_SCHEMA = {
     },
     "unconfirmed_pool": {
         "schema": """
+            CREATE TABLE IF NOT EXISTS transaction_recs (
+                HASH                    VARCHAR(64),
+                sender                  TEXT,
+                receiver                TIMESTAMP,
+                amount                  REAL,
+                PRIMARY KEY             (HASH)
+            );
+        """,
+        "schema2": """
             CREATE TABLE IF NOT EXISTS unconfirmed_pool (
                 HASH                    VARCHAR(64),
-                TXN_DATA                TEXT,
                 TIME_STAMP              TIMESTAMP,
-                PRIMARY KEY             (HASH, TXN_DATA)
+                PRIMARY KEY             (HASH),
+                FOREIGN KEY (HASH) REFERENCES transaction_recs(HASH)
             );
         """
     },
@@ -65,6 +74,8 @@ class SetupDB(object):
             if not os.path.isfile(db_path):
                 open(db_path, 'w').close()
             DBService.post(dbfile, db_obj['schema'])
+            if 'schema2' in db_obj:
+                DBService.post(dbfile, db_obj['schema2'])
 
         with open(NODE_CONFIG) as data_file:
             self.config = json.load(data_file)

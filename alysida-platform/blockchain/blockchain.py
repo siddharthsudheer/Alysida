@@ -27,10 +27,9 @@ class TransactionRecord(object):
         self.timestamp = DBService.get_timestamp()
         self.hash = '{}'.format(self.get_hash())
 
-    def generate(self):
-        jsonified = dict({'data': dict(self.txn_data)})
-        final_txn_data = '{}'.format(jsonified['data'])
-        return (self.hash, final_txn_data, self.timestamp)
+    def generate_vals(self):
+        vals = (self.hash, self.txn_data['sender'], self.txn_data['receiver'], self.txn_data['amount'], self.timestamp)
+        return vals
 
     def get_hash(self):
         data = {
@@ -44,9 +43,9 @@ class TransactionRecord(object):
     
     def json_format(self):
         data = {
-            'hash': self.hash,
-            'txn_data': self.txn_data,
-            'time_stamp': '{}'.format(self.timestamp)
+            "hash": self.hash,
+            "txn_data": self.txn_data,
+            "time_stamp": '{}'.format(self.timestamp)
         }
 
         return data
