@@ -42,7 +42,7 @@ class Consensus(object):
     """
         Endpoint client can call to get 
         the longest chain in the network.
-    """
+    """    
     def on_get(self, req, resp):
         blockchain = Chain()     
         replaced = blockchain.resolve_conflicts()
@@ -69,6 +69,9 @@ class PeerBlockchain(object):
         peer for their blockchain headers
         or their db file.
     """
+    def __init__(self, db_store):
+        self._db_store = db_store
+
     def on_get(self, req, resp, action):
         blockchain = Chain()     
         if action == 'give-headers':
@@ -121,13 +124,6 @@ class MineBlock(object):
             'peer_responses': responses
         }
 
-        # msg = {
-        #     'Title': 'Success',
-        #     'Message': 'Block has been added and broadcast.',
-        #     'Block': send_payload,
-        #     'peer_responses': "All Good"
-        # }
-
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_201
         resp.body = json.dumps(msg)
@@ -140,17 +136,9 @@ class AcceptNewBlock(object):
         """
         res = utils.parse_post_req(req)['new_block']
 
-        print(json.dumps(res, indent=4))
-
         blockchain = Chain()
         new_block = Block(prev_block_hash=blockchain.last_block.block_hash)
         new_block.to_obj(res)
-        print(new_block.gen_dict())
-
-        
-
-        print(blockchain.length)
-        print(new_block.block_num)
 
         if blockchain.length > new_block.block_num:
             final_title, final_msg, resp_status = "Stale Block", "My blockchain is longer that yours.", falcon.HTTP_201

@@ -32,7 +32,7 @@ def create_app(db_store):
     api.add_route('/serve-peer-addresses', server.ServePeerAddresses(db_store))  # GET
     api.add_route('/accept-new-transaction', server.AcceptNewTransaction())  # POST
     api.add_route('/accept-new-block', server.AcceptNewBlock())  # POST
-    api.add_route('/peer-blockchain/{action}', server.PeerBlockchain())  # GET
+    api.add_route('/peer-blockchain/{action}', server.PeerBlockchain(db_store))  # GET
 
 
     return api

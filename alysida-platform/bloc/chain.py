@@ -9,6 +9,7 @@ from itertools import groupby
 from random import *
 import requests
 from db.store import DBStore
+from urllib.parse import urlparse
 
 class Chain(object):
     def __init__(self):
@@ -120,7 +121,7 @@ class Chain(object):
         get_checksum = lambda p: p[r][b][c]
 
         max_len = max(list(map(get_len, peer_headers)))
-        if max_len > self.length or (max_len == self.length and self.length == 1):
+        if max_len >= self.length:
             max_len_peers = list(filter(lambda p: p[r][b][l] == max_len, peer_headers))
             max_len_peers_chks = list(map(get_checksum, max_len_peers))
             max_len_peers_chks_freq = [{c: chk, 'freq': len(list(freq))} for chk, freq in groupby(max_len_peers_chks)]
@@ -141,9 +142,14 @@ class Chain(object):
                     response = requests.get(peer_to_contact, stream=True)
 
                     if response.status_code == 200:
+                        peer_name = urlparse(peer).hostname
+                        resp_obj = { 
+                            'Peer': '{}'.format(peer_name),
+                            'Response': response 
+                        }
                         storage_path = os.environ.get('DB_STORAGE_PATH', './db/my_dbs')
                         db_store = DBStore(storage_path)
-                        db_obj = db_store.save(response, "main_chain")
+                        db_obj = db_store.save(resp_obj, "main_chain")
                         new_chain = db_obj
                         got_file = True
                     else:
