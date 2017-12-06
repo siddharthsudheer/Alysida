@@ -27,17 +27,13 @@ class Block(object):
         self.txn_hashes = txn_hashes
         self.txn_recs = txn_recs
 
-    def create(self):
+    def create(self, last_block_hash):
         if self.get_txn_recs():
             self.time_stamp = DBService.get_timestamp()
-            self.prev_block_hash = self.get_prev_block_hash()
-            if self.prev_block_hash != None:
-                self.nonce = self.proof_of_work(
-                    self.time_stamp, self.txn_hashes_string(), self.prev_block_hash)
-                self.block_hash = self.gen_block_hash()
-                return self.block_hash
-            else:
-                print("Cannot find Previous Block Hash")
+            self.prev_block_hash = last_block_hash
+            self.nonce = self.proof_of_work(self.time_stamp, self.txn_hashes_string(), self.prev_block_hash)
+            self.block_hash = self.gen_block_hash()
+            return self.block_hash
         else:
             print("Something wrong with transactions chosen.")
 
@@ -58,37 +54,56 @@ class Block(object):
             nonce += 1
         print(" ")
         return nonce
+    
+    def convert_to_txns_obj(self, res):
+        txn_recs = [dict(zip(res['column_names'], c))
+                    for c in res['rows']] if res else []
+
+        txo = lambda t: Transaction(
+            sender=t['sender'],
+            receiver=t['receiver'],
+            amount=t['amount'],
+            txn_hash=t['TXN_HASH'],
+            time_stamp=t['TXN_TIME_STAMP']
+        )
+        return list(map(txo, txn_recs))
 
     def get_txn_recs(self):
         if self.txn_recs is None:
+            hashes = str(tuple(self.txn_hashes)).replace(",)",")")
             sql_query = """
                 SELECT TXN_HASH, TXN_TIME_STAMP, sender, receiver, amount 
                 FROM unconfirmed_pool 
                 WHERE TXN_HASH IN {}
-            """.format(tuple(self.txn_hashes))
+            """.format(hashes)
             res = DBService.query("unconfirmed_pool", sql_query)
             if res:
-                txn_recs = [dict(zip(res['column_names'], c))
-                            for c in res['rows']] if res else []
-
+                txn_recs = self.convert_to_txns_obj(res)
                 if len(txn_recs) != len(self.txn_hashes):
                     return False
-
-                txo = lambda t: Transaction(
-                    sender=t['sender'],
-                    receiver=t['receiver'],
-                    amount=t['amount'],
-                    txn_hash=t['TXN_HASH'],
-                    time_stamp=t['TXN_TIME_STAMP']
-                )
-                self.txn_recs = list(map(txo, txn_recs))
-                return self.txn_recs
+                else:
+                    self.txn_recs = self.convert_to_txns_obj(res)
+                    return self.txn_recs
             else:
                 return False
         else:
             if len(self.txn_recs) != len(self.txn_hashes):
                 return False
             return self.txn_recs
+    
+    def get_block_confirmed_txns(self):
+            sql_query = """
+                SELECT TXN_HASH, TXN_TIME_STAMP, sender, receiver, amount 
+                FROM confirmed_txns 
+                WHERE BLOCK_HASH = '{}'
+            """.format(self.block_hash)
+            res = DBService.query("main_chain", sql_query)
+            if res:    
+                self.txn_recs = self.convert_to_txns_obj(res)
+                self.txn_hashes = self.gen_txn_hashes()
+                return self.txn_recs
+            else:
+                return False
 
     def gen_block_hash(self):
         block_string = self.gen_block_string(self.nonce, self.prev_block_hash, self.time_stamp, self.txn_hashes_string())
@@ -106,12 +121,12 @@ class Block(object):
             INSERT INTO main_chain (BLOCK_NUM, BLOCK_HASH, NONCE, TIME_STAMP) 
             VALUES (NULL,'{}',{},'{}');
         """.format(self.block_hash, self.nonce, self.time_stamp)
-        if self.txn_recs is None:
-            self.get_txn_recs()
-
+        self.txn_recs = self.get_txn_recs()
+        print(self.txn_recs)
         txn_inserts = [txn.confirmed_txns_insert_sql(self.block_hash) for txn in self.txn_recs]
-        confirmed_txns = '{}'.format(''.join(map(str, txn_inserts))) 
+        confirmed_txns = '{}'.format(''.join(map(str, txn_inserts)))
         final = main_chain + "\n" + confirmed_txns
+
         db_resp = DBService.post_many("main_chain", final)
 
         if db_resp != True:
@@ -129,9 +144,10 @@ class Block(object):
 
 
     def clean_unconfirmed_pool(self):
+        hashes = str(tuple(self.txn_hashes)).replace(",)",")")
         delete_sql = """
             DELETE FROM unconfirmed_pool WHERE TXN_HASH in {};
-        """.format(tuple(self.txn_hashes))
+        """.format(hashes)
         db_resp = DBService.post("unconfirmed_pool", delete_sql)
 
 
@@ -163,7 +179,7 @@ class Block(object):
 
         self.txn_recs = list(map(_txo, data['txns']))
         self.txn_hashes = [t.txn_hash for t in self.txn_recs]
-        self.prev_block_hash = self.get_prev_block_hash()
+        # self.prev_block_hash = self.get_prev_block_hash()
 
     def get_block_num(self):
         sql_query = "SELECT BLOCK_NUM FROM main_chain WHERE BLOCK_HASH='{}'".format(self.block_hash)
@@ -179,6 +195,9 @@ class Block(object):
         result = DBService.query("main_chain", sql_query)
         nonces = result['rows'] if result else []
         return nonces
+    
+    def gen_txn_hashes(self):
+        return [t.txn_hash for t in self.txn_recs]
 
     def txn_hashes_string(self):
         x = '{}'.format(','.join(map(str, sorted(self.txn_hashes))))
@@ -215,5 +234,6 @@ class Block(object):
                 res = DBService.query("main_chain", sql_query)
                 self.block_num = None if not res else res['rows'][0]
                 prev_hash = _using_block_num()
-
-        return None if not prev_hash else prev_hash
+        
+        self.prev_block_hash = prev_hash if prev_hash else None
+        return self.prev_block_hash

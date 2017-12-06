@@ -5,37 +5,179 @@ import requests
 import server.utils as utils
 import db.service as DBService
 from crypt.certs import Certs
+from bloc.block import Block
 from bloc.transaction import Transaction
+from bloc.chain import Chain
 
 DB_TYPE = 'application/x-sqlite3'
 
 
-class Chain(object):
-    #<my_url>/chain/ask-peers
-    #<peer_url>/chain/request
+# class Chain(object):
+#     #<my_url>/chain/ask-peers
+#     #<peer_url>/chain/request
 
-    def __init__(self, db_store):
-        self._db_store = db_store
+#     def __init__(self, db_store):
+#         self._db_store = db_store
 
+#     def on_get(self, req, resp, action):
+#         # Asking for their chain
+#         if action == 'ask-peers':
+#             peer_chains = utils.broadcast(
+#                 payload=None, endpoint="chain/request", request='GET')
+#             db_filenames = []
+#             for chain in peer_chains:
+#                 chain_obj = self._db_store.save(chain, "main_chain")
+#                 db_filenames.append(chain_obj)
+#             resp.status = falcon.HTTP_201
+#             resp.body = json.dumps(db_filenames)
+#         # Giving them my chain upon request
+#         elif action == 'request':
+#             resp.content_type = DB_TYPE
+#             resp.stream, resp.stream_len = self._db_store.open('main_chain.db')
+#             resp.status = falcon.HTTP_200
+#         else:
+#             raise falcon.HTTPError(falcon.HTTP_400, 'Incorrect Endpoint Used.')
+
+class Consensus(object):
+    """
+        Endpoint client can call to get 
+        the longest chain in the network.
+    """
+    def on_get(self, req, resp):
+        blockchain = Chain()     
+        replaced = blockchain.resolve_conflicts()
+
+        if replaced:
+            final_title, final_msg = "Success", "Our chain was replaced"
+        else:
+            final_title, final_msg = "Success", "Our chain is authoritative"
+
+        msg = {
+            "title": final_title,
+            "message": final_msg,
+            "blockchain": blockchain.gen_dict()
+        }
+
+        resp.content_type = 'application/json'
+        resp.status = falcon.HTTP_200
+        resp.body = json.dumps(msg)
+
+
+class PeerBlockchain(object):
+    """
+        Endpoint for peer to ask another
+        peer for their blockchain headers
+        or their db file.
+    """
     def on_get(self, req, resp, action):
-        # Asking for their chain
-        if action == 'ask-peers':
-            peer_chains = utils.broadcast(
-                payload=None, endpoint="chain/request", request='GET')
-            db_filenames = []
-            for chain in peer_chains:
-                chain_obj = self._db_store.save(chain, "main_chain")
-                db_filenames.append(chain_obj)
-            resp.status = falcon.HTTP_201
-            resp.body = json.dumps(db_filenames)
-        # Giving them my chain upon request
-        elif action == 'request':
+        blockchain = Chain()     
+        if action == 'give-headers':
+            response = {'blockchain': blockchain.gen_dict(only_headers=True)}
+            resp.content_type = 'application/json'
+            resp.status = falcon.HTTP_200
+            resp.body = json.dumps(response)
+        elif action == 'give-db':
             resp.content_type = DB_TYPE
             resp.stream, resp.stream_len = self._db_store.open('main_chain.db')
             resp.status = falcon.HTTP_200
         else:
             raise falcon.HTTPError(falcon.HTTP_400, 'Incorrect Endpoint Used.')
 
+
+class GetBlockchain(object):
+    """
+        Endpoint for user to see the
+        whole blockchain
+    """
+    def on_get(self, req, resp):
+        blockchain = Chain()
+        response = {'blockchain': blockchain.gen_dict()}
+
+        resp.content_type = 'application/json'
+        resp.status = falcon.HTTP_200
+        resp.body = json.dumps(response)
+
+
+class MineBlock(object):
+    def on_post(self, req, resp):
+        """
+            Endpoint that client can POST to,
+            with transaction IDs, to mine their 
+            new block
+        """
+        payload = utils.parse_post_req(req)['txn_hashes']
+        blockchain = Chain()
+        new_block = Block(txn_hashes=payload)
+        new_block.get_txn_recs()
+        new_block = blockchain.add_new_block(new_block)
+
+        send_payload = {'new_block': new_block.gen_dict()}
+        responses = utils.broadcast(payload=send_payload, endpoint="accept-new-block", request='POST')
+
+        msg = {
+            'Title': 'Success',
+            'Message': 'Block has been added and broadcast.',
+            'Block': send_payload,
+            'peer_responses': responses
+        }
+
+        # msg = {
+        #     'Title': 'Success',
+        #     'Message': 'Block has been added and broadcast.',
+        #     'Block': send_payload,
+        #     'peer_responses': "All Good"
+        # }
+
+        resp.content_type = 'application/json'
+        resp.status = falcon.HTTP_201
+        resp.body = json.dumps(msg)
+
+class AcceptNewBlock(object):
+    def on_post(self, req, resp):
+        """
+            Endpoint that accepts a new block
+            mined by peer on network
+        """
+        res = utils.parse_post_req(req)['new_block']
+
+        print(json.dumps(res, indent=4))
+
+        blockchain = Chain()
+        new_block = Block(prev_block_hash=blockchain.last_block.block_hash)
+        new_block.to_obj(res)
+        print(new_block.gen_dict())
+
+        
+
+        print(blockchain.length)
+        print(new_block.block_num)
+
+        if blockchain.length > new_block.block_num:
+            final_title, final_msg, resp_status = "Stale Block", "My blockchain is longer that yours.", falcon.HTTP_201
+        elif (blockchain.length + 1) == new_block.block_num:
+            new_block.prev_block_hash = blockchain.last_block.block_hash
+            
+            if new_block.is_valid():
+                blockchain.add_new_block(new_block)
+                final_title, final_msg, resp_status = "Success", "New Block Added", falcon.HTTP_201
+            else:
+                final_title, final_msg, resp_status = "Invalid", "Block not working out with my last block.", falcon.HTTP_400
+                # Ask all my peers for their blockchain headers
+                # See, if I'm the one who messed up somehow.
+                # If so, get the most common blockchain out there and 
+                # try adding this block again.
+        else:
+            final_title, final_msg, resp_status = "Failed", "Something's wrong.", falcon.HTTP_500
+
+        msg = {
+            'Title': final_title,
+            'Message': final_msg,
+            'block_data': res
+        }
+
+        resp.content_type = 'application/json'
+        resp.status = resp_status
+        resp.body = json.dumps(msg)
 
 class AcceptNewTransaction(object):
     def on_post(self, req, resp):
@@ -83,6 +225,13 @@ class AddNewTransaction(object):
             'Txn_data': send_payload,
             'peer_responses': responses
         }
+
+        # msg = {
+        #     'Title': final_title,
+        #     'Message': final_msg,
+        #     'Txn_data': send_payload,
+        #     'peer_responses': "all good"
+        # }
 
         resp.content_type = 'application/json'
         resp.status = resp_status
@@ -349,7 +498,7 @@ class DiscoverPeerAddresses(object):
         self._db_store = db_store
     
     def on_get(self, req, resp):
-        peer_dbs = utils.broadcast(payload=None, endpoint="serve-peer-addresses", request='GET')
+        peer_dbs = utils.broadcast(payload=None, endpoint="serve-peer-addresses", request='GET', isFile=True)
         db_filenames = []
         for peer_db in peer_dbs:
             db_obj = self._db_store.save(peer_db, "peer_addresses")

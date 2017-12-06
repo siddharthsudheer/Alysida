@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import io
 import os
-
+import re
 
 class DBStore(object):
 
@@ -13,8 +13,9 @@ class DBStore(object):
         self._fopen = fopen
 
     def save(self, recv_db, filename):
-        peer_name, db_stream = recv_db
-        name = '{filename}-{peer_name}{ext}'.format(filename=filename, peer_name=peer_name, ext='.db')
+        peer_name, db_stream = recv_db['Peer'], recv_db['Response']
+        peer_name_stripped = re.sub('[^A-Za-z0-9]+', '', peer_name)
+        name = '{filename}-{peer_name}{ext}'.format(filename=filename, peer_name=peer_name_stripped, ext='.db')
         db_path = os.path.join(self._storage_save_path, name)
 
         with self._fopen(db_path, 'wb') as db_file:

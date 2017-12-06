@@ -1,3 +1,3 @@
 #!/usr/bin/env python3
 
-__all__ = ['setup', 'store', 'service']
+__all__ = ['store', 'service']

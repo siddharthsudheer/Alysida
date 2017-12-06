@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-import os
+import os, sys
 import json
 import socket
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import db.service as DBService
 from bloc.block import Block
 from bloc.transaction import Transaction
@@ -71,7 +73,7 @@ NODE_CONFIG = './AlysidaFile'
 
 
 class SetupDB(object):
-    def __init__(self, DBService):
+    def __init__(self):
         for f in [DB_PATH, DB_DOWNLOADS_PATH]:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -144,14 +146,23 @@ class SetupDB(object):
             and add genesis block.
         """
         blockchain = Chain()
-        if not blockchain.length > 0:
-            print("\nNothing in Chain. Generating genesis block.")
+        if blockchain.length == 0:
+            print("\n ~~> Nothing in Chain. Generating genesis block.")
             genesis_txn = Transaction(sender='genesis', receiver='genesis', amount=0)
             genesis_txn.create()
             genesis_hash = genesis_txn.gen_dict()['txn_hash']
 
-            genesis_block = Block(txn_hashes=[genesis_hash], txn_recs=[genesis_txn], prev_block_hash='0')
+            genesis_block = Block(txn_hashes=[genesis_hash], txn_recs=[genesis_txn])
             genesis_block = blockchain.add_new_block(genesis_block)
-            print("\nGenesis Block Validity: ", genesis_block.is_valid())
+            print("\n ~~> Genesis Block Validity: ", genesis_block.is_valid())
             g = genesis_block.gen_dict()
             print("\n{}\n".format(json.dumps(g, indent=4, sort_keys=True)))
+            print("\n ~~> Generated Genesis Block.")
+
+
+def main():
+    SetupDB()
+    print("\n ~~> DB Setup Complete.\n")
+
+if __name__ == "__main__":
+    main()

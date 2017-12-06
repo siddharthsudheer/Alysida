@@ -1,12 +1,12 @@
 import json
-import re
 from urllib.parse import urlparse
 import socket
 import requests
 import falcon
 import db.service as DBService
 
-def broadcast(payload, endpoint, request):
+
+def broadcast(payload, endpoint, request, isFile=False):
     """
         TODO: 
             • Make Async
@@ -24,10 +24,10 @@ def broadcast(payload, endpoint, request):
     else:
         ips = query_result['rows']
         peer_nodes = list(map(lambda i: 'http://{}:4200/'.format(i), ips))
+        responses = list()
 
         if request == 'POST':
             responses = list()
-
             for peer in peer_nodes:
                 url = peer + endpoint
                 resp = requests.post(url, data=json.dumps(payload))
@@ -37,15 +37,24 @@ def broadcast(payload, endpoint, request):
                     'Response': waw
                     })
             return responses
-
+        
         elif request == 'GET':
             responses = []
-
             for peer in peer_nodes:
                 url = peer + endpoint
-                peer_name = urlparse(peer).netloc
-                resp = (re.sub('[^A-Za-z0-9]+', '', peer_name), requests.get(url, stream=True))
-                responses.append(resp)
+                peer_name = urlparse(peer).hostname
+                if isFile:
+                    resp = requests.get(url, stream=True)
+                    responses.append({ 
+                        'Peer': '{}'.format(peer_name),
+                        'Response': resp 
+                    })
+                else:
+                    resp = requests.get(url)
+                    responses.append({ 
+                        'Peer': '{}'.format(peer_name),
+                        'Response': resp.json()
+                    })
 
             return responses
 
