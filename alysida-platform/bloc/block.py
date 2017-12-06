@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import hashlib
 import falcon
+import json
 import db.service as DBService
 from bloc.transaction import Transaction
 
@@ -45,8 +46,7 @@ class Block(object):
 
         def _is_valid_block(nonce, prev_block_hash, time_stamp, txn_hashes):
             if nonce not in self.used_nonces():
-                guess = self.gen_block_string(
-                    nonce, prev_block_hash, time_stamp, txn_hashes)
+                guess = self.gen_block_string(nonce, prev_block_hash, time_stamp, txn_hashes)
                 guess_hash = hashlib.sha256(guess).hexdigest()
                 print('~~~> Hash: {}'.format(guess_hash), end="\r")
                 return guess_hash[:len(DIFFICULTY_TARGET)] == DIFFICULTY_TARGET
@@ -91,8 +91,7 @@ class Block(object):
             return self.txn_recs
 
     def gen_block_hash(self):
-        block_string = self.gen_block_string(
-            self.nonce, self.prev_block_hash, self.time_stamp, self.txn_hashes_string())
+        block_string = self.gen_block_string(self.nonce, self.prev_block_hash, self.time_stamp, self.txn_hashes_string())
         return hashlib.sha256(block_string).hexdigest()
 
     def is_valid(self):
@@ -150,7 +149,22 @@ class Block(object):
         }
 
         return block_dict
-    
+
+    def to_obj(self, data):
+        self.block_num = data['block_num']
+        self.block_hash = data['block_hash']
+        self.time_stamp = data['time_stamp']
+        self.nonce = data['nonce']
+
+        def _txo(t):
+            new_t = Transaction()
+            new_t.to_obj(t)
+            return new_t
+
+        self.txn_recs = list(map(_txo, data['txns']))
+        self.txn_hashes = [t.txn_hash for t in self.txn_recs]
+        self.prev_block_hash = self.get_prev_block_hash()
+
     def get_block_num(self):
         sql_query = "SELECT BLOCK_NUM FROM main_chain WHERE BLOCK_HASH='{}'".format(self.block_hash)
         res = DBService.query("main_chain", sql_query)
@@ -167,7 +181,8 @@ class Block(object):
         return nonces
 
     def txn_hashes_string(self):
-        return '{}'.format(','.join(map(str, self.txn_hashes)))
+        x = '{}'.format(','.join(map(str, sorted(self.txn_hashes))))
+        return x
 
     def gen_block_string(self, nonce, prev_block_hash, time_stamp, txn_hashes):
         block_string = '{}{}{}{}'.format(
@@ -186,11 +201,9 @@ class Block(object):
                     return '0'
                 else:
                     prev_block_num = self.block_num - 1
-                    sql_query = "SELECT BLOCK_HASH FROM main_chain WHERE BLOCK_NUM = {}".format(
-                        prev_block_num)
+                    sql_query = "SELECT BLOCK_HASH FROM main_chain WHERE BLOCK_NUM = {}".format(prev_block_num)
                     res = DBService.query("main_chain", sql_query)
-                    prev_hash = False if not res else '{}'.format(
-                        res['rows'][0])
+                    prev_hash = False if not res else '{}'.format(res['rows'][0])
                     return prev_hash
             else:
                 return False
@@ -198,18 +211,9 @@ class Block(object):
         prev_hash = _using_block_num()
         if prev_hash != True:
             if self.block_hash != None:
-                sql_query = "SELECT BLOCK_NUM FROM main_chain WHERE BLOCK_HASH = {}".format(
-                    self.block_hash)
+                sql_query = "SELECT BLOCK_NUM FROM main_chain WHERE BLOCK_HASH = '{}'".format(self.block_hash)
                 res = DBService.query("main_chain", sql_query)
-                self.block_num = None if not res else '{}'.format(
-                    res['rows'][0])
+                self.block_num = None if not res else res['rows'][0]
                 prev_hash = _using_block_num()
 
         return None if not prev_hash else prev_hash
-
-    # def to_obj(self, data):
-    #     self.sender = data['txn_data']['sender']
-    #     self.receiver = data['txn_data']['receiver']
-    #     self.amount = data['txn_data']['amount']
-    #     self.time_stamp = data['time_stamp']
-    #     self.txn_hash = data['txn_hash']

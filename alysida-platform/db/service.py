@@ -111,7 +111,7 @@ def insert_into(dbs, vals):
 
 
 def get_timestamp():
-    timestamp_format = '%Y-%m-%d %H:%M:%S'
+    timestamp_format = '%Y-%m-%d %H:%M:%S.%f'
     timestamp = date.datetime.now()
     return timestamp.strftime(timestamp_format)
 

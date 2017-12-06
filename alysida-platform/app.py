@@ -44,29 +44,33 @@ SetupDB(DBService)
 #     db_store = DBStore(storage_path)
 #     return create_app(db_store)
 
-# from time import sleep
-# peeps = [
-#     {'sender':'admin', 'receiver':'sidd', 'amount':'50'},
-#     {'sender':'sidd', 'receiver':'isit', 'amount':'20'},
-#     {'sender':'isit', 'receiver':'atit', 'amount':'10'},
-#     {'sender':'admin', 'receiver':'sidd', 'amount':'50'},
-#     {'sender':'sidd', 'receiver':'isit', 'amount':'20'},
-#     {'sender':'isit', 'receiver':'atit', 'amount':'10'},
-# ]
+peeps = [
+    {'sender':'admin', 'receiver':'sidd', 'amount':'50'},
+    {'sender':'sidd', 'receiver':'isit', 'amount':'20'},
+    {'sender':'isit', 'receiver':'atit', 'amount':'10'},
+    {'sender':'admin', 'receiver':'sidd', 'amount':'50'},
+    {'sender':'sidd', 'receiver':'isit', 'amount':'20'},
+    {'sender':'isit', 'receiver':'atit', 'amount':'10'},
+]
 
-# txn_hashes = list()
+txn_hashes = list()
 
-# for i in peeps:
-#     o = Transaction(sender=i['sender'], receiver=i['receiver'], amount=i['amount'])
-#     txn_hashes.append(o.create())
-#     o.add_to_unconfirmed_pool()
-#     sleep(1)
+for i in peeps:
+    o = Transaction(sender=i['sender'], receiver=i['receiver'], amount=i['amount'])
+    txn_hashes.append(o.create())
+    o.add_to_unconfirmed_pool()
 
-# txns = txn_hashes[0:4]
-# txns = ['809dde25fe6f4aa77bd3b18fae147acd5831490623b25f1098912c8bc5e1c514', '7d5a6d9f3cb78733085332ac27674bbaa5484d518de9705b13231fa9e8ccb752']
-# blockchain = Chain()
-# new_block = Block(txn_hashes=txns)
-# new_block = blockchain.add_new_block(new_block)
-# x = new_block.gen_dict()
+txns = txn_hashes[0:4]
+blockchain = Chain()
+new_block = Block(txn_hashes=txns)
+new_block = blockchain.add_new_block(new_block)
+x = new_block.gen_dict()
+print(json.dumps(x, indent=4, sort_keys=True))
+
+y = json.dumps(x)
+new_obj = Block()
+new_obj.to_obj(json.loads(y))
+print(new_obj.is_valid())
+l = new_obj.gen_dict()
+print(json.dumps(l, indent=4, sort_keys=True))
 # print(new_block.is_valid())
-# print(json.dumps(x, indent=4, sort_keys=True))
