@@ -8,6 +8,7 @@ from crypt.certs import Certs
 from bloc.block import Block
 from bloc.transaction import Transaction
 from bloc.chain import Chain
+import time
 
 DB_TYPE = 'application/x-sqlite3'
 
@@ -110,6 +111,13 @@ class MineBlock(object):
         """
         payload = utils.parse_post_req(req)['txn_hashes']
         blockchain = Chain()
+        replaced = blockchain.resolve_conflicts()
+        # if replaced, then check if selected txns
+        # are still in unconfirmed pool or not.
+        # if not, msg user telling them to re-select
+
+        # if not replaced.. continue
+
         new_block = Block(txn_hashes=payload)
         new_block.get_txn_recs()
         new_block = blockchain.add_new_block(new_block)
@@ -140,32 +148,60 @@ class AcceptNewBlock(object):
         new_block = Block(prev_block_hash=blockchain.last_block.block_hash)
         new_block.to_obj(res)
 
-        if blockchain.length > new_block.block_num:
-            final_title, final_msg, resp_status = "Stale Block", "My blockchain is longer that yours.", falcon.HTTP_201
-        elif (blockchain.length + 1) == new_block.block_num:
-            new_block.prev_block_hash = blockchain.last_block.block_hash
-            
-            if new_block.is_valid():
-                blockchain.add_new_block(new_block)
-                final_title, final_msg, resp_status = "Success", "New Block Added", falcon.HTTP_201
+        if blockchain.length >= new_block.block_num:
+            block_exists = True if blockchain.last_block.block_hash == new_block.block_hash else False
+            if block_exists:
+                msg = {
+                    'title': "Block exists",
+                    'message': "Block already in Blockchain."
+                }
             else:
-                final_title, final_msg, resp_status = "Invalid", "Block not working out with my last block.", falcon.HTTP_400
-                # Ask all my peers for their blockchain headers
-                # See, if I'm the one who messed up somehow.
-                # If so, get the most common blockchain out there and 
-                # try adding this block again.
-        else:
-            final_title, final_msg, resp_status = "Failed", "Something's wrong.", falcon.HTTP_500
+                msg = {
+                    'title': "Stale Block",
+                    'message': "My blockchain is longer that yours."
+                }
+            resp.content_type = 'application/json'
+            resp.status = falcon.HTTP_200
+            resp.body = json.dumps(msg)
+        
+        if blockchain.length < new_block.block_num:
+            is_next_block_num = True if (blockchain.length + 1) == new_block.block_num else False
+            
+            if is_next_block_num and new_block.is_valid():
+                blockchain.add_new_block(new_block)
+                msg = {
+                    'title': "Success",
+                    'message': "New Block Added",
+                    'block_data': res
+                }
+                resp.content_type = 'application/json'
+                resp.status = falcon.HTTP_201
+                resp.body = json.dumps(msg)
 
-        msg = {
-            'Title': final_title,
-            'Message': final_msg,
-            'block_data': res
-        }
+            else:
+                time.sleep(2)
+                replaced = blockchain.resolve_conflicts()
+                new_block.prev_block_hash = blockchain.last_block.block_hash
+                block_added = True if blockchain.last_block.block_hash == new_block.block_hash else False
+                if replaced and block_added:
+                    msg = {
+                        'title': "Success",
+                        'message': "New Block Added",
+                        'block_data': res
+                    }
+                    resp.content_type = 'application/json'
+                    resp.status = falcon.HTTP_201
+                    resp.body = json.dumps(msg)
+                else:
+                    msg = {
+                        'title': "Failed",
+                        'message': "Unable to accept block into chain.",
+                        'block_data': res
+                    }
+                    resp.content_type = 'application/json'
+                    resp.status = falcon.HTTP_200
+                    resp.body = json.dumps(msg)
 
-        resp.content_type = 'application/json'
-        resp.status = resp_status
-        resp.body = json.dumps(msg)
 
 class AcceptNewTransaction(object):
     def on_post(self, req, resp):

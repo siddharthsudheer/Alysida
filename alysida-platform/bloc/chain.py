@@ -21,6 +21,7 @@ class Chain(object):
     def _chain(self):
         sql_query = "SELECT * FROM main_chain"
         result = DBService.query("main_chain", sql_query)
+
         blocks = [dict(zip(result['column_names'], bloc))
                   for bloc in result['rows']] if result else []
 
@@ -107,7 +108,6 @@ class Chain(object):
         """
         new_chain = None
         peer_headers = utils.broadcast(payload=None, endpoint="peer-blockchain/give-headers", request='GET')
-        
         # Find max length chain
         # Find all peers' checksum who have that max length
         # if there are peers having the max length but different 
@@ -149,6 +149,7 @@ class Chain(object):
                         }
                         storage_path = os.environ.get('DB_STORAGE_PATH', './db/my_dbs')
                         db_store = DBStore(storage_path)
+                        db_store._storage_save_path = storage_path
                         db_obj = db_store.save(resp_obj, "main_chain")
                         new_chain = db_obj
                         got_file = True
@@ -158,7 +159,16 @@ class Chain(object):
         
         # Replace our chain if we discovered a new, valid chain longer than ours
         if new_chain:
-            return True
+            new_db_file = './db/my_dbs/{}'.format(new_chain['db_file'])
+            os.rename('./db/my_dbs/main_chain.db', './db/my_dbs/main_chain_current.db')
+            os.rename(new_db_file, './db/my_dbs/main_chain.db')
+            self.chain = self._chain()
+            self.length = len(self.chain)
+            self.last_block = self.chain[-1] if self.length > 0 else None
+
+            if self.is_valid():
+                os.remove('./db/my_dbs/main_chain_current.db')
+                return True
 
         return False
     

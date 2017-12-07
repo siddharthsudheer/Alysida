@@ -12,7 +12,7 @@ DB_DOWNLOADS_PATH = DB_PATH + 'downloads/'
 def query(dbs, user_query, in_downloads=False):
     try:
         dir_path = DB_DOWNLOADS_PATH if in_downloads else DB_PATH
-        db_path = dir_path + dbs + '.db'
+        db_path =  dir_path + dbs + '.db'
         conn = lite.connect(db_path)
         try:
             with conn:
