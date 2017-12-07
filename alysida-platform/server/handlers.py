@@ -224,6 +224,14 @@ class AcceptNewTransaction(object):
             'Txn_data': results
         }
 
+        url='http://localhost:5200/notification'
+        payload = {
+            "event_name": "accepted_new_txn",
+            "data": results
+        }
+        
+        ui_post = requests.post(url, data=json.dumps(payload))
+
         resp.content_type = 'application/json'
         resp.status = resp_status
         resp.body = json.dumps(msg)
@@ -584,3 +592,20 @@ class GetPeerAddresses(object):
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(dict(final_msg))
+
+
+class WebsocketTest(object):
+    """
+        TEST FOR WEBSOCKETS
+    """
+    def on_get(self, req, resp):
+        url='http://localhost:5201/notification'
+        data = dict({"msg": "helloWorld"})
+        
+        proxy_resp = requests.post(url, data=json.dumps(data))
+
+        data_resp = {"Sent data": data}
+        
+        resp.content_type = 'application/json'
+        resp.status = falcon.HTTP_200
+        resp.body = json.dumps(data_resp)

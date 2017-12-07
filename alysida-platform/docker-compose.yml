@@ -24,6 +24,7 @@ services:
       - GUNICORN_WORKERS=5
     ports:
       - "4201:4200"
+      - "5201:5200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
@@ -38,6 +39,7 @@ services:
       - GUNICORN_WORKERS=5
     ports:
       - "4202:4200"
+      - "5202:5200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
@@ -52,6 +54,7 @@ services:
       - GUNICORN_WORKERS=5
     ports:
       - "4203:4200"
+      - "5203:5200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:
@@ -67,6 +70,7 @@ services:
       - GUNICORN_WORKERS=5
     ports:
       - "4200:4200"
+      - "5200:5200"
     command: /bin/bash -c './scripts/alysida_start.sh'
     networks:
       net:

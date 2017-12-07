@@ -2,3 +2,5 @@ falcon
 gunicorn
 httpie
 pycrypto
+flask
+flask_socketio
