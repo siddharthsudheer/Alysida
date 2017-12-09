@@ -159,10 +159,10 @@
             margin:0;
 
             &:nth-child(2n+1) {
-                top: 60px;
+                top: 16px;
             }
             &:nth-child(2n+2) {
-                top: 16px;
+                top: 60px;
             }
         }
     }
@@ -237,6 +237,7 @@
 }/* #app-title */
 
 #peers {
+    z-index: 5;
     position: fixed;
     height: 100%;
     top: 0;
@@ -279,12 +280,11 @@
         }
 
         .info {
-            z-index: 1;
             position: absolute;
             text-align: left;
             top: 50%;
             left: 36px;
-            min-width: 100px;
+            min-width: 140px;
             opacity: 0;
             visibility: hidden;
             .transform(translateY(-50%));
@@ -307,6 +307,45 @@
                 text-transform: capitalize;
                 .transition-delay(0.06s);
             }
+
+            .peer_action {
+                margin-top: -6px;
+                position: absolute;
+                right: 0;
+                top: 50%;
+                .transform(translateX(0) translateY(-50%));
+                .transition(all 0.4s cubic-bezier(0,0,0.3,1));
+
+                button {
+                    display: none;
+                    float: right;
+                    padding: 8px;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    color: rgba(0, 0, 0, 0.5);
+                    text-transform: uppercase;
+                    font-size: 10px;
+                    line-height: 1.2;
+                    cursor: pointer;
+                    .scale(1);
+            
+                    background: @sky-blue;
+                    @shadow-color: @sky-blue-dark;
+                    box-shadow: -2px 2px 0 1.2px @shadow-color;
+                    -webkit-box-shadow: -2px 2px 0 1.2px @shadow-color;
+            
+                    .transition(all 0.2s cubic-bezier(0,0,0.3,1));
+
+                    &:hover {
+                        background: @green;
+                        @shadow-color: @green-dark;
+                        box-shadow: -2px 2px 0 1.2px @shadow-color;
+                        -webkit-box-shadow: -2px 2px 0 1.2px @shadow-color;
+                        .scale(1.1);
+                    }
+                }
+            }
         }/* .info */
 
 
@@ -318,6 +357,9 @@
                 visibility: visible;
                 .ip, .status {
                     .transform(translateX(36px));
+                }
+                .peer_action {
+                    .transform(translateX(36px) translateY(-50%));
                 }
             }
 
@@ -359,9 +401,31 @@
         }
         &.unregistered {
             .colorer(#EE6352);
+            .info {
+                min-width: 147px;
+                .peer_action button.register_btn {
+                    display: block;
+                }
+            }
         }
-        &.pending {
+        &.acceptance-pending {
             .colorer(#ffa725);
+            .info {
+                min-width: 185px;
+                .peer_action button.accept_btn {
+                    display: block;
+                }
+            }
+        }
+
+        &.registration-pending {
+            .colorer(@sky-blue);
+            .info {
+                min-width: 211px;
+                .peer_action button.ask_btn {
+                    display: block;
+                }
+            }
         }
 
         &.btn {
@@ -438,4 +502,37 @@
       transform: scale(1.0);
       -webkit-transform: scale(1.0);
     }
+  }
+
+#main_loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 100;
+
+    .center {
+        position: relative;
+        top: 45%;
+        transform: translateY(-50%);
+
+        .spinner {
+            margin: 0px auto;
+            width: 80px;
+            height: 80px;
+        }
+
+        p {
+            color: white;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 100;
+        }
+    }
+}
+
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
   }

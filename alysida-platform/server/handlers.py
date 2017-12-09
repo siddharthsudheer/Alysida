@@ -123,21 +123,21 @@ class MineBlock(object):
         new_block = blockchain.add_new_block(new_block)
 
         send_payload = {'new_block': new_block.gen_dict()}
-        # responses = utils.broadcast(payload=send_payload, endpoint="accept-new-block", request='POST')
-
-        # msg = {
-        #     'Title': 'Success',
-        #     'Message': 'Block has been added and broadcast.',
-        #     'Block': send_payload,
-        #     'peer_responses': responses
-        # }
+        responses = utils.broadcast(payload=send_payload, endpoint="accept-new-block", request='POST')
 
         msg = {
             'Title': 'Success',
             'Message': 'Block has been added and broadcast.',
             'Block': send_payload,
-            'peer_responses': 'all good'
+            'peer_responses': responses
         }
+
+        # msg = {
+        #     'Title': 'Success',
+        #     'Message': 'Block has been added and broadcast.',
+        #     'Block': send_payload,
+        #     'peer_responses': 'all good'
+        # }
 
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_201
@@ -181,6 +181,7 @@ class AcceptNewBlock(object):
                     'message': "New Block Added",
                     'block_data': res
                 }
+                utils.notifier("accepted_new_block", msg)
                 resp.content_type = 'application/json'
                 resp.status = falcon.HTTP_201
                 resp.body = json.dumps(msg)
@@ -196,6 +197,7 @@ class AcceptNewBlock(object):
                         'message': "New Block Added",
                         'block_data': res
                     }
+                    utils.notifier("accepted_new_block", msg)
                     resp.content_type = 'application/json'
                     resp.status = falcon.HTTP_201
                     resp.body = json.dumps(msg)
@@ -250,21 +252,21 @@ class AddNewTransaction(object):
         final_title, final_msg, resp_status = txn_rec.add_to_unconfirmed_pool()
 
         send_payload = {'new_txn': txn_rec.gen_dict()}
-        # responses = utils.broadcast(payload=send_payload, endpoint="accept-new-transaction", request='POST')
-
-        # msg = {
-        #     'Title': final_title,
-        #     'Message': final_msg,
-        #     'Txn_data': send_payload,
-        #     'peer_responses': responses
-        # }
+        responses = utils.broadcast(payload=send_payload, endpoint="accept-new-transaction", request='POST')
 
         msg = {
             'Title': final_title,
             'Message': final_msg,
             'Txn_data': send_payload,
-            'peer_responses': "all good"
+            'peer_responses': responses
         }
+
+        # msg = {
+        #     'Title': final_title,
+        #     'Message': final_msg,
+        #     'Txn_data': send_payload,
+        #     'peer_responses': "all good"
+        # }
 
         resp.content_type = 'application/json'
         resp.status = resp_status
@@ -362,6 +364,7 @@ class RegisterMe(object):
             'Message': final_msg
         }
 
+        utils.notifier("new_peer", msg)
         resp.content_type = 'application/json'
         resp.status = final_status
         resp.body = json.dumps(msg)
@@ -375,6 +378,7 @@ class AddNewRegistration(object):
         parsed = utils.parse_post_req(req)
         resp.content_type = 'application/json'
         msg, resp.status = DBService.add_new_peer_address(parsed, 'acceptance-pending')
+        utils.notifier("new_peer", parsed)
         resp.body = json.dumps(msg)
 
 
@@ -387,6 +391,7 @@ class AddPeerAddresses(object):
         parsed = utils.parse_post_req(req)
         resp.content_type = 'application/json'
         msg, resp.status = DBService.add_new_peer_address(parsed, 'unregistered')
+        utils.notifier("new_peer", parsed)
         resp.body = json.dumps(msg)
 
 
@@ -439,6 +444,7 @@ class AcceptNewRegistration(object):
             'Message': final_msg
         }
 
+        utils.notifier("new_peer", msg)
         resp.content_type = 'application/json'
         resp.body = json.dumps(msg)
 
@@ -495,6 +501,7 @@ class RequestRegistrationUpdate(object):
             'title': str(final_title),
             'message': str(final_msg)
         }
+        utils.notifier("new_peer", msg)
         resp.content_type = 'application/json'
         resp.body = json.dumps(dict(msg))
 
@@ -516,6 +523,7 @@ class UpdateRegistrationStatus(object):
                 'Message': 'Thank you for accepting moi.'
             }
 
+            utils.notifier("new_peer", msg)
             resp.content_type = 'application/json'
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(msg)
@@ -556,6 +564,8 @@ class DiscoverPeerAddresses(object):
             else:
                 i['difference'] = "No Difference."
                 i['post_status'] = "Nothing was inserted into DB."
+        
+        utils.notifier("peer_discovery_result", db_filenames)
         resp.status = falcon.HTTP_201
         resp.body = json.dumps(db_filenames)
 
@@ -593,20 +603,3 @@ class GetPeerAddresses(object):
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(dict(final_msg))
-
-
-class WebsocketTest(object):
-    """
-        TEST FOR WEBSOCKETS
-    """
-    def on_get(self, req, resp):
-        url='http://localhost:5201/notification'
-        data = dict({"msg": "helloWorld"})
-        
-        proxy_resp = requests.post(url, data=json.dumps(data))
-
-        data_resp = {"Sent data": data}
-        
-        resp.content_type = 'application/json'
-        resp.status = falcon.HTTP_200
-        resp.body = json.dumps(data_resp)

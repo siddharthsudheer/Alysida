@@ -20,18 +20,18 @@
     
 </head>
 
-<body ng-controller="MainController">
+<body ng-controller="MainController" ng-cloak>
     <div id="header_items">
 
-        <div class="diamond_btn">
+        <!-- <div class="diamond_btn">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">verified_user</i>
                 <p class="ip">Register with peers</p>
             </div>
-        </div>
+        </div> -->
 
-        <div class="diamond_btn">
+        <div class="diamond_btn" ng-click="discoverPeers()">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">wifi_tethering</i>
@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <div class="diamond_btn">
+        <div class="diamond_btn" ng-click="doConsensus()">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">repeat_one</i>
@@ -83,41 +83,20 @@
 
 
     <div id="peers" ng-controller="PeersController">
-        <div class="peer fade {{ peer.status }}" ng-repeat="peer in peers | reverse">
+        <div class="peer fade {{ peer.status }}" ng-repeat="peer in peers | orderBy:'status'">
             <i class="material-icons">perm_identity</i>
             <div class="info">
-                <p class="ip">{{ peer.peer_ip }}</p>
-                <p class="status">{{ peer.status }}</p>
+                <div>
+                    <p class="ip">{{ peer.peer_ip }}</p>
+                    <p class="status">{{ peer.status }}</p>
+                </div>
+                <div class="peer_action">
+                    <button class="accept_btn" ng-click="acceptPeer(peer.peer_ip)">Accept</button>
+                    <button class="register_btn" ng-click="registerWithPeer(peer.peer_ip)">Register</button>
+                    <button class="ask_btn" ng-click="askPeerForUpdate(peer.peer_ip)">Ask Update</button>
+                </div>
             </div>
         </div>
-        <!-- <div class="peer registered">
-            <i class="material-icons">perm_identity</i>
-            <div class="info">
-                <p class="ip">101.101.101.101</p>
-                <p class="status">Registered</p>
-            </div>
-        </div>
-        <div class="peer pending">
-            <i class="material-icons">perm_identity</i>
-            <div class="info">
-                <p class="ip">101.101.101.102</p>
-                <p class="status">Pending</p>
-            </div>
-        </div>
-        <div class="peer unregistered">
-            <i class="material-icons">perm_identity</i>
-            <div class="info">
-                <p class="ip">101.101.101.103</p>
-                <p class="status">Unregistered</p>
-            </div>
-        </div>
-        <div class="peer unregistered">
-            <i class="material-icons">perm_identity</i>
-            <div class="info">
-                <p class="ip">101.101.101.103</p>
-                <p class="status">Unregistered</p>
-            </div>
-        </div> -->
         <div class="peer btn add fade">
             <i class="material-icons">person_add</i>
             <div class="info">
@@ -129,6 +108,15 @@
     <div ng-view class="fadePage"></div>
 
 
+    <div id="main_loader" ng-show="mainLoading" class="fade">
+        <div class="center">
+            <div class="spinner" ng-hide="loadingDone">
+                <div class="double-bounce1"></div>
+                <div class="double-bounce2"></div>
+            </div>
+            <p>{{ loading_msg }}</p>
+        </div>
+    </div>
 
     <script type="text/javascript" src="lib/jquery/dist/jquery.js"></script>
     <script type="text/javascript" src="lib/jquery-ui/jquery-ui.js"></script>

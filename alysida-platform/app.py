@@ -24,8 +24,6 @@ def create_app(db_store):
     api.add_route('/get-blockchain', server.GetBlockchain())  # GET
     api.add_route('/consensus', server.Consensus())  # GET
 
-    api.add_route('/websocket-test', server.WebsocketTest())  # GET
-
     # Internal Routes
     api.add_route('/new-registration', server.AddNewRegistration())  # POST
     api.add_route('/accept-new-registration', server.AcceptNewRegistration())  # POST

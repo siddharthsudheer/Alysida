@@ -394,7 +394,7 @@ h6 {
   height: 100px;
   margin: 0 14px;
   cursor: pointer;
-  right: 234px;
+  right: 205px;
   margin-top: 57px;
   /* iOS Safari */
   -webkit-touch-callout: none;
@@ -864,7 +864,7 @@ h6 {
   height: 110px;
   margin: 0 14px;
   cursor: pointer;
-  right: 234px;
+  right: 205px;
   margin-top: 57px;
   /* iOS Safari */
   -webkit-touch-callout: none;
@@ -1289,7 +1289,7 @@ h6 {
     height: 90px;
     margin: 0 14px;
     cursor: pointer;
-    right: 234px;
+    right: 205px;
     margin-top: 57px;
     /* iOS Safari */
     -webkit-touch-callout: none;
@@ -1485,14 +1485,15 @@ h6 {
     color: rgba(0, 0, 0, 0.75);
   }
   #header_items .diamond_btn:nth-child(2n+1) {
-    top: 60px;
+    top: 16px;
   }
   #header_items .diamond_btn:nth-child(2n+2) {
-    top: 16px;
+    top: 60px;
   }
 }
 /* #app-title */
 #peers {
+  z-index: 5;
   position: fixed;
   height: 100%;
   top: 0;
@@ -1554,12 +1555,11 @@ h6 {
   transition: all 0.4s cubic-bezier(0, 0, 0.3, 1);
 }
 #peers .peer .info {
-  z-index: 1;
   position: absolute;
   text-align: left;
   top: 50%;
   left: 36px;
-  min-width: 100px;
+  min-width: 140px;
   opacity: 0;
   visibility: hidden;
   -webkit-transform: translateY(-50%);
@@ -1605,6 +1605,58 @@ h6 {
   -o-transition-delay: 0.06s;
   transition-delay: 0.06s;
 }
+#peers .peer .info .peer_action {
+  margin-top: -6px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  -webkit-transform: translateX(0) translateY(-50%);
+  -moz-transform: translateX(0) translateY(-50%);
+  -ms-transform: translateX(0) translateY(-50%);
+  -o-transform: translateX(0) translateY(-50%);
+  transform: translateX(0) translateY(-50%);
+  -webkit-transition: all 0.4s cubic-bezier(0, 0, 0.3, 1);
+  -moz-transition: all 0.4s cubic-bezier(0, 0, 0.3, 1);
+  -ms-transition: all 0.4s cubic-bezier(0, 0, 0.3, 1);
+  -o-transition: all 0.4s cubic-bezier(0, 0, 0.3, 1);
+  transition: all 0.4s cubic-bezier(0, 0, 0.3, 1);
+}
+#peers .peer .info .peer_action button {
+  display: none;
+  float: right;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+  font-size: 10px;
+  line-height: 1.2;
+  cursor: pointer;
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transform: scale(1);
+  background: #0db4bb;
+  box-shadow: -2px 2px 0 1.2px #00838f;
+  -webkit-box-shadow: -2px 2px 0 1.2px #00838f;
+  -webkit-transition: all 0.2s cubic-bezier(0, 0, 0.3, 1);
+  -moz-transition: all 0.2s cubic-bezier(0, 0, 0.3, 1);
+  -ms-transition: all 0.2s cubic-bezier(0, 0, 0.3, 1);
+  -o-transition: all 0.2s cubic-bezier(0, 0, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0, 0, 0.3, 1);
+}
+#peers .peer .info .peer_action button:hover {
+  background: #c0c933;
+  box-shadow: -2px 2px 0 1.2px #487e04;
+  -webkit-box-shadow: -2px 2px 0 1.2px #487e04;
+  -webkit-transform: scale(1.1);
+  -moz-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  -o-transform: scale(1.1);
+  transform: scale(1.1);
+}
 #peers .peer:hover:after,
 #peers .peer:hover .material-icons,
 #peers .peer:hover .info {
@@ -1630,6 +1682,13 @@ h6 {
   -ms-transform: translateX(36px);
   -o-transform: translateX(36px);
   transform: translateX(36px);
+}
+#peers .peer:hover .info .peer_action {
+  -webkit-transform: translateX(36px) translateY(-50%);
+  -moz-transform: translateX(36px) translateY(-50%);
+  -ms-transform: translateX(36px) translateY(-50%);
+  -o-transform: translateX(36px) translateY(-50%);
+  transform: translateX(36px) translateY(-50%);
 }
 #peers .peer:hover.btn {
   opacity: 1;
@@ -1727,17 +1786,47 @@ h6 {
 #peers .peer.unregistered .info .status {
   color: #981e0f;
 }
-#peers .peer.pending:after {
+#peers .peer.unregistered .info {
+  min-width: 147px;
+}
+#peers .peer.unregistered .info .peer_action button.register_btn {
+  display: block;
+}
+#peers .peer.acceptance-pending:after {
   content: '';
   background-color: #ffa725;
   box-shadow: -7px 1px 0 -1px #724400;
 }
-#peers .peer.pending .material-icons {
+#peers .peer.acceptance-pending .material-icons {
   color: #251600;
 }
-#peers .peer.pending .info .ip,
-#peers .peer.pending .info .status {
+#peers .peer.acceptance-pending .info .ip,
+#peers .peer.acceptance-pending .info .status {
   color: #8b5300;
+}
+#peers .peer.acceptance-pending .info {
+  min-width: 185px;
+}
+#peers .peer.acceptance-pending .info .peer_action button.accept_btn {
+  display: block;
+}
+#peers .peer.registration-pending:after {
+  content: '';
+  background-color: #0db4bb;
+  box-shadow: -7px 1px 0 -1px #011314;
+}
+#peers .peer.registration-pending .material-icons {
+  color: #000000;
+}
+#peers .peer.registration-pending .info .ip,
+#peers .peer.registration-pending .info .status {
+  color: #032a2c;
+}
+#peers .peer.registration-pending .info {
+  min-width: 211px;
+}
+#peers .peer.registration-pending .info .peer_action button.ask_btn {
+  display: block;
 }
 #peers .peer.btn {
   opacity: 0.5;
@@ -1819,4 +1908,34 @@ h6 {
     transform: scale(1);
     -webkit-transform: scale(1);
   }
+}
+#main_loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 100;
+}
+#main_loader .center {
+  position: relative;
+  top: 45%;
+  transform: translateY(-50%);
+}
+#main_loader .center .spinner {
+  margin: 0px auto;
+  width: 80px;
+  height: 80px;
+}
+#main_loader .center p {
+  color: white;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 100;
+}
+[ng\:cloak],
+[ng-cloak],
+.ng-cloak {
+  display: none !important;
 }

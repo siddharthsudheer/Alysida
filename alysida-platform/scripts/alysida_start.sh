@@ -27,7 +27,7 @@ stop() {
 
 
 
-# alysida_mynohup ./webapp2/run
+alysida_mynohup ./webapp2/run
 
 MY_UUID="$(./scripts/uuidgen.py)"
 
