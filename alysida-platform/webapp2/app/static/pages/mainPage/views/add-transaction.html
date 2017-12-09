@@ -1,0 +1,32 @@
+<div class="my_container add_txn_page">
+    <form class="form" name="form" novalidate role="form">
+        <div class="form_elem fade">
+            <div class="input_elem" ng-class="{ 'has-error' : form.sender.$invalid && form.sender.$dirty }">
+                <label for="sender">Sender</label>
+                <input type="text" name="sender" id="sender" ng-model="txn.sender" required>
+            </div>
+            <p ng-show="form.sender.$invalid && form.sender.$dirty" class="help_block">Sender is required</p>
+        </div>
+
+        <div class="form_elem fade">
+            <div class="input_elem" ng-class="{ 'has-error' : form.receiver.$invalid && form.receiver.$dirty }">
+                <label for="receiver">Receiver</label>
+                <input type="text" name="receiver" id="receiver" ng-model="txn.receiver" required>
+            </div>
+            <p ng-show="form.receiver.$invalid && form.receiver.$dirty" class="help_block">Receiver is required</p>
+        </div>
+
+        <div class="form_elem fade">
+            <div class="input_elem" ng-class="{ 'has-error' : form.amt.$invalid && form.amt.$dirty }">
+                <label for="amt">Amount</label>
+                <input type = "number" name="amt" id="amt" ng-model="txn.amount"  step=0.001 required>
+            </div>
+            <p ng-show="form.amt.$invalid && form.amt.$dirty" class="help_block">Amount is required</p>
+        </div>
+
+
+        
+        <button class="fade" type="submit" ng-disabled="form.$invalid" ng-click="submit()">Add Transaction</button>
+
+    </form>
+</div>

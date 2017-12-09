@@ -1,0 +1,50 @@
+@import "app/static/pages/mainPage/less/variables.less";
+
+html {
+    background-color: @body-bg;
+}
+body {
+    font-family: @font-family-base;
+    font-size: @font-size-base;
+    color: @text-color;
+    background-color: @body-bg;
+    -webkit-font-smoothing: antialiased;
+    line-height: @line-height-base;
+    margin: 0;
+}
+  
+*:focus {
+    outline: 0 !important;
+}
+  
+h1, h2, h3,
+.h1, .h2, .h3{
+    font-family: @font-family-header;
+}
+  
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6{
+    margin: 0;
+}
+  
+h1 {font-size:@font-size-xl;} // ~32px
+h2 {font-size:@font-size-lg;} // ~24px
+h3 {font-size:@font-size-md;} // ~16px
+h4 {font-size:@font-size-sm;} // ~13px
+h5 {font-size:@font-size-xs;} // ~12px
+h6 {font-size:@font-size-xxs;} // ~10px
+  
+// a {
+//     color: @link-color;
+//     text-decoration: none;
+//     cursor: pointer;
+//     outline: 0;
+
+//     &:hover,
+//     &:focus {
+//         color: darken(@link-color, 10%);
+//         text-decoration: none;
+//     }
+// }
+  
+  

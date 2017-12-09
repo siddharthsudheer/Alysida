@@ -8,26 +8,26 @@ alysida_mynohup() {
     echo $'=======================================\n'
 }
 
-# alysida_mykill() {
-#     ps -ef | grep "$1" | grep -v grep | awk '{print $2}' | xargs kill
-#     echo $'\n======================================='
-#     echo $'  Process '$1' has been killed.'
-#     echo $'=======================================\n'
-# }
+alysida_mykill() {
+    ps -ef | grep "$1" | grep -v grep | awk '{print $2}' | xargs kill
+    echo $'\n======================================='
+    echo $'  Process '$1' has been killed.'
+    echo $'=======================================\n'
+}
 
 
 
-# start() {
-#     alysida_mynohup ./webapp2/run.py
-# }
+start() {
+    alysida_mynohup ./webapp2/run.py
+}
 
-# stop() {
-#     alysida_mykill ./webapp2/run.py
-# }
+stop() {
+    alysida_mykill ./webapp2/run.py
+}
 
 
 
-alysida_mynohup ./webapp2/run
+# alysida_mynohup ./webapp2/run
 
 MY_UUID="$(./scripts/uuidgen.py)"
 

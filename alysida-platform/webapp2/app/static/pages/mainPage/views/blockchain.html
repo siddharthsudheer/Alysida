@@ -1,0 +1,43 @@
+<div class="my_container">
+    <div class="spinner" ng-hide="loadingDone">
+        <div class="double-bounce1"></div>
+        <div class="double-bounce2"></div>
+    </div>
+
+    <div ng-show="loadingDone">
+        <div class="block fade" ng-repeat="block in blocks | reverse">
+            <div class="top">
+                <div class="left">
+                        <h2>Block #{{block.block_num}}</h2>
+                        <h4>Created on {{block.time_stamp}}</h4>
+                </div>
+                <div class="right">
+                    <h4>Nonce</h4>
+                    <h2>{{block.nonce}}</h2>
+                </div>
+            </div>
+
+            <div class="block_hash">
+                <span class="label">Hash</span> 
+                <span class="hash">{{ block.block_hash }}</span>
+            </div>
+
+            <!-- TXN_BOX -->
+            <div class="txns_box" ng-repeat="txn in block.txns">
+                <div class="transaction">
+                    <h4>Created on {{txn.txn_time_stamp}}</h4>
+                    <div class="txn_hash">
+                        <span class="label">Txn Hash</span>
+                        <span class="hash">{{ txn.txn_hash }}</span>
+                    </div>
+                    <div class="txn_data">
+                        <h5>Sender</h5><h3>{{ txn.txn_data.sender }}</h3>
+                        <h5>Receiver</h5><h3>{{ txn.txn_data.receiver }}</h3>
+                        <h5>Amount</h5><h3>{{ txn.txn_data.amount }}</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- TXN_BOX -->
+        </div>
+    </div>
+</div>

@@ -1,0 +1,220 @@
+/* ===================================================
+ * 1) Colors
+ * =================================================== */
+
+@al-cloud: 			        #F3F3F3;
+@body-bg:    		        @al-cloud;
+@sky-blue:                  #0db4bb;
+@sky-blue-dark:             #00838f;
+@red:                       #EE6352;
+@orange:                    #ffa725;
+@yellow:                    #ffd44f;
+@yellow-dark:               #ae9136;
+@green:                     #c0c933;
+@green-dark:                #487e04;
+/* ===================================================
+ * 2) Fonts
+ * =================================================== */
+
+ @font-family-sans-serif:  "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+ @font-family-serif:       Georgia, "Times New Roman", Times, serif;
+ @font-family-base:        @font-family-sans-serif;
+ @font-family-header:      @font-family-sans-serif;
+
+ @font-size-base:          14px;
+ @font-size-xl:            ceil(@font-size-base * 2.28); // ~32px
+ @font-size-lg:            ceil(@font-size-base * 1.71); // ~24px
+ @font-size-md:            ceil(@font-size-base * 1.14); // ~16px
+ @font-size-sm:            ceil(@font-size-base * 0.92); // ~13px
+ @font-size-xs:            ceil(@font-size-base * 0.85); // ~12px
+ @font-size-xxs:           ceil(@font-size-base * 0.71); // ~10px
+
+ @line-height-base:        1.42857143; // 20/14
+ @line-height-computed:    floor(@font-size-base * @line-height-base); // ~20px
+
+ @text-color: 		     rgba(0, 0, 0, 0.87);
+ @link-color:              inherit;
+
+/* ===================================================
+ * 3) Mixins
+ * =================================================== */
+
+ .transform(@transformation) {
+    -webkit-transform: @transformation;
+       -moz-transform: @transformation;
+        -ms-transform: @transformation;
+         -o-transform: @transformation;
+            transform: @transformation;
+}
+
+.transform-origin(@origin){
+    -webkit-transform-origin: @origin;
+       -moz-transform-origin: @origin;
+        -ms-transform-origin: @origin;
+         -o-transform-origin: @origin;
+            transform-origin: @origin;
+}
+
+.box-shadow(@shadow) {
+    -webkit-box-shadow: @shadow;
+       -moz-box-shadow: @shadow;
+            box-shadow: @shadow;
+}
+
+.no-select() {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none;
+         -moz-user-select: none; 
+          -ms-user-select: none; 
+              user-select: none;    
+}
+
+
+// Transitions
+.transition(@transition) {
+    -webkit-transition: @transition;
+        -moz-transition: @transition;
+        -ms-transition: @transition;
+            -o-transition: @transition;
+            transition: @transition;
+}
+
+.transition-delay(@transition-delay) {
+    -webkit-transition-delay: @transition-delay;
+       -moz-transition-delay: @transition-delay;
+        -ms-transition-delay: @transition-delay;
+         -o-transition-delay: @transition-delay;
+            transition-delay: @transition-delay;
+}
+
+.general-transition() {
+    .transition(all .2s ease-out);
+}
+
+.scale(@ratio) {
+    .transform(scale(@ratio));
+}
+
+.backface-visibility(@visibility){
+    -webkit-backface-visibility: @visibility;
+       -moz-backface-visibility: @visibility;
+            backface-visibility: @visibility;
+}
+
+.no-backface-visibility() {
+    -webkit-backface-visibility: hidden;
+       -moz-backface-visibility: hidden;
+            backface-visibility: hidden;
+}
+
+//3D Stuff
+.preserve-3d() {
+    -webkit-transform-style: preserve-3d;
+       -moz-transform-style: preserve-3d;
+         -o-transform-style: preserve-3d;
+            transform-style: preserve-3d;
+}
+
+.perspective(@perspective: 1000) {
+    -webkit-perspective: @perspective;
+       -moz-perspective: @perspective;
+        -ms-perspective: @perspective;
+            perspective: @perspective;
+}
+
+//Animations
+.animation(@animation) {
+    -webkit-animation: @animation;
+       -moz-animation: @animation;
+            animation: @animation;
+}
+
+.animation-delay(@animation-delay) {
+    -webkit-animation-delay: @animation-delay;
+       -moz-animation-delay: @animation-delay;
+         -o-animation-delay: @animation-delay;
+            animation-delay: @animation-delay;
+}
+
+
+
+.diamond_shape(@size, @shadowsize, @text-color, @bg-color, @shadow-color) {
+    position: relative;
+    text-align: center;
+    width: @size;
+    height: @size;
+    margin: 0 14px;
+    cursor: pointer;
+    right: 234px;
+    margin-top: 57px;
+    .no-select();
+
+    .wrapper {
+        top: 54%;
+        position: absolute;
+        .transform(translateY(-50%));
+        z-index: 2;
+        width: 100%;
+        left:  2px;
+
+        p, .material-icons {
+            .transition(all .4s cubic-bezier(0,0,0.3,1));
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        p {
+            z-index: 2;
+            position: relative;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+            line-height: 1.2;
+            margin: 0;
+        }
+
+        .material-icons {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            .transform(translate(-50%));
+        }
+
+    }/* .wrapper */
+
+    .diamond {
+        z-index: 1;
+        width: @size + @shadowsize;
+        height: @size + @shadowsize - 2;
+        position: relative;
+        overflow: hidden;
+        background-color: @bg-color;
+        .transform(rotate(45deg));
+        border-radius: 10px;
+        .transition(all .4s cubic-bezier(0,0,0.3,1));
+        box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+
+        &:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            background: rgba(255,255,255,0.6);
+            opacity: 0;
+            border-radius: 100%;
+            .transform-origin(50% 50%);
+            .transform(rotate(45deg) scale(0,0) translate(-50%));
+            -webkit-animation: ripple 4s infinite;
+                    animation: ripple 4s infinite;
+        }
+    }/* .diamond */
+
+    &:hover {
+        .wrapper {
+            p, .material-icons {
+                color: rgba(0,0,0,0.75);
+            }
+        }/* .wrapper */
+    }/* &:hover */
+}/* .diamond_shape  */

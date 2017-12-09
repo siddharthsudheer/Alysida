@@ -1,10 +1,75 @@
-<div class="container" ng-style="{'padding-top':'15%'}" ng-controller="TransactionsController">
-    <ul>
-        <li ng-repeat="txn in new_txns">
-            {{txn.txn_hash}} | {{txn.txn_time_stamp}} | {{txn.txn_data.sender}} | {{txn.txn_data.receiver}} | {{txn.txn_data.amount}}
-        </li>
-      <li ng-repeat="txn in txns">
-          {{txn.TXN_HASH}} | {{txn.TXN_TIME_STAMP}} | {{txn.sender}} | {{txn.receiver}} | {{txn.amount}}
-      </li>
-    </ul>
+<div class="my_container mine_block_page" ng-controller="TransactionsController">
+    <div class="header_elems">
+        <p class="info_msg fade">Select transactions from the unconfirmed list below, then hit the mine button.</p>
+        <div ng-click="mineBlock()" class="diamond_btn fade">
+            <div class="diamond"></div>
+            <div class="wrapper">
+                <i class="material-icons">library_add</i>
+                <p class="ip">Mine Block</p>
+            </div>
+        </div>
+        <div class="title ">
+            <i class="material-icons">receipt</i>
+            <h1>Unconfirmed Transactions</h1>
+        </div>
+    </div>
+
+    <div class="spinner fade" ng-if="!loadingDone">
+        <div class="double-bounce1"></div>
+        <div class="double-bounce2"></div>
+    </div>
+    <div ng-show="loadingDone">
+        <!-- TXN_BOX -->
+        <div class="txns_box fade" ng-repeat="txn in new_txns | reverse" >
+            <div class="transaction">
+                <div class="top">
+                    <h4>Created on {{txn.txn_time_stamp}}</h4>
+                    <input 
+                        type="checkbox" 
+                        value="{{txn.txn_hash}}"
+                        ng-checked="selected_txns.txn_hashes.indexOf(txn.txn_hash) > -1"
+                        ng-click="toggleSelection(txn.txn_hash)">
+                </div>
+                <div class="txn_hash">
+                    <span class="label">Txn Hash</span>
+                    <span class="hash">{{ txn.txn_hash }}</span>
+                </div>
+                <div class="txn_data">
+                    <h5>Sender</h5><h3>{{ txn.txn_data.sender }}</h3>
+                    <h5>Receiver</h5><h3>{{ txn.txn_data.receiver }}</h3>
+                    <h5>Amount</h5><h3>{{ txn.txn_data.amount }}</h3>
+                </div>
+            </div>
+        </div>
+        <!-- TXN_BOX -->
+
+        <!-- TXN_BOX -->
+        <div class="txns_box fade" ng-repeat="txn in txns | reverse" ng-if="loadingDone">
+            <div class="transaction">
+                <div class="top">
+                    <h4>Created on {{txn.TXN_TIME_STAMP}}</h4>
+                    <label>
+                        Add to New Block
+                        <input 
+                        type="checkbox" 
+                        value="{{txn.TXN_HASH}}"
+                        ng-checked="selection.indexOf(txn.TXN_HASH) > -1"
+                        ng-click="toggleSelection(txn.TXN_HASH)">
+                    </label>
+
+                </div>
+                <div class="txn_hash">
+                    <span class="label">Txn Hash</span>
+                    <span class="hash">{{ txn.TXN_HASH }}</span>
+                </div>
+                <div class="txn_data">
+                    <h5>Sender</h5><h3>{{ txn.sender }}</h3>
+                    <h5>Receiver</h5><h3>{{ txn.receiver }}</h3>
+                    <h5>Amount</h5><h3>{{ txn.amount }}</h3>
+                </div>
+            </div>
+        </div>
+        <!-- TXN_BOX -->
+    </div>
 </div>
+

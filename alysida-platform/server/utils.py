@@ -72,3 +72,13 @@ def parse_post_req(req):
                                'Could not decode the request body. The '
                                'JSON was incorrect.')
     return result_json
+
+
+def notifier(event_name, data):
+    url='http://localhost:5200/notification'
+    payload = {
+        "event_name": event_name,
+        "data": data
+    }
+    
+    ui_post = requests.post(url, data=json.dumps(payload))

@@ -123,13 +123,20 @@ class MineBlock(object):
         new_block = blockchain.add_new_block(new_block)
 
         send_payload = {'new_block': new_block.gen_dict()}
-        responses = utils.broadcast(payload=send_payload, endpoint="accept-new-block", request='POST')
+        # responses = utils.broadcast(payload=send_payload, endpoint="accept-new-block", request='POST')
+
+        # msg = {
+        #     'Title': 'Success',
+        #     'Message': 'Block has been added and broadcast.',
+        #     'Block': send_payload,
+        #     'peer_responses': responses
+        # }
 
         msg = {
             'Title': 'Success',
             'Message': 'Block has been added and broadcast.',
             'Block': send_payload,
-            'peer_responses': responses
+            'peer_responses': 'all good'
         }
 
         resp.content_type = 'application/json'
@@ -224,13 +231,7 @@ class AcceptNewTransaction(object):
             'Txn_data': results
         }
 
-        url='http://localhost:5200/notification'
-        payload = {
-            "event_name": "accepted_new_txn",
-            "data": results
-        }
-        
-        ui_post = requests.post(url, data=json.dumps(payload))
+        utils.notifier("accepted_new_txn", results)
 
         resp.content_type = 'application/json'
         resp.status = resp_status
@@ -249,21 +250,21 @@ class AddNewTransaction(object):
         final_title, final_msg, resp_status = txn_rec.add_to_unconfirmed_pool()
 
         send_payload = {'new_txn': txn_rec.gen_dict()}
-        responses = utils.broadcast(payload=send_payload, endpoint="accept-new-transaction", request='POST')
-
-        msg = {
-            'Title': final_title,
-            'Message': final_msg,
-            'Txn_data': send_payload,
-            'peer_responses': responses
-        }
+        # responses = utils.broadcast(payload=send_payload, endpoint="accept-new-transaction", request='POST')
 
         # msg = {
         #     'Title': final_title,
         #     'Message': final_msg,
         #     'Txn_data': send_payload,
-        #     'peer_responses': "all good"
+        #     'peer_responses': responses
         # }
+
+        msg = {
+            'Title': final_title,
+            'Message': final_msg,
+            'Txn_data': send_payload,
+            'peer_responses': "all good"
+        }
 
         resp.content_type = 'application/json'
         resp.status = resp_status

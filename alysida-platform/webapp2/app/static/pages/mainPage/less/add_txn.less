@@ -1,0 +1,97 @@
+@import "app/static/pages/mainPage/less/variables.less";
+@import "app/static/pages/mainPage/less/base.less";
+
+.my_container.add_txn_page {
+    .form_elem {
+        margin: 16px;
+        .input_elem {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            text-overflow: ellipsis;
+    
+            input, textarea {
+                padding: 16px;
+                min-width: 300px;
+                width: 100%;
+                font-size: 16px;
+                border: none;
+                @shadow-color: #dcdcdc;
+                box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+                -webkit-box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+                background: #fff;
+                box-sizing: border-box;
+                font-weight: 100;
+                color: rgba(0,0,0,0.65);
+                margin-left: 16px;
+                border-radius: 8px;
+            }
+    
+            label {
+                font-size: 16px;
+                font-weight: 400;
+                min-width: 72px;
+                text-transform: uppercase;
+                color: rgba(0, 0, 0, 0.65);
+                text-align: right;
+                margin-top: 5px;
+            }
+    
+        }/* .input_elem */
+
+        .help_block {
+            margin: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            font-style: italic;
+            text-align: right;
+            color: @red;
+        }/* .help_block */
+    }/* .form_elem */
+
+    button {
+        float: right;
+        margin: 16px;
+        padding: 16px 32px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        color: rgba(0, 0, 0, 0.5);
+        text-transform: uppercase;
+        font-size: 12px;
+        line-height: 1.2;
+        cursor: pointer;
+
+        background: @yellow;
+        @shadow-color: @yellow-dark;
+        box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+        -webkit-box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+
+        .transition(all 0.2s cubic-bezier(0,0,0.3,1));
+
+        .disabled() {
+            cursor: not-allowed;
+            color: #8a8a8a;
+            background: #d4d4d4;
+            @shadow-color: #b6b6b6;
+            box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+            -webkit-box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+        }
+
+        &:disabled {
+            .disabled();
+
+            &:hover {
+                .disabled();
+            }
+        }
+
+        &:hover {
+            background: @sky-blue;
+            @shadow-color: @sky-blue-dark;
+            box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+            -webkit-box-shadow: -3px 3px 0 2px @shadow-color, 0 0 0 -1px @shadow-color, -5px 6px 0 1.2px @shadow-color;
+        }
+    }
+}/* .my_container.add_txn_page  */
