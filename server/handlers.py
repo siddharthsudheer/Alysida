@@ -13,32 +13,6 @@ import time
 DB_TYPE = 'application/x-sqlite3'
 
 
-# class Chain(object):
-#     #<my_url>/chain/ask-peers
-#     #<peer_url>/chain/request
-
-#     def __init__(self, db_store):
-#         self._db_store = db_store
-
-#     def on_get(self, req, resp, action):
-#         # Asking for their chain
-#         if action == 'ask-peers':
-#             peer_chains = utils.broadcast(
-#                 payload=None, endpoint="chain/request", request='GET')
-#             db_filenames = []
-#             for chain in peer_chains:
-#                 chain_obj = self._db_store.save(chain, "main_chain")
-#                 db_filenames.append(chain_obj)
-#             resp.status = falcon.HTTP_201
-#             resp.body = json.dumps(db_filenames)
-#         # Giving them my chain upon request
-#         elif action == 'request':
-#             resp.content_type = DB_TYPE
-#             resp.stream, resp.stream_len = self._db_store.open('main_chain.db')
-#             resp.status = falcon.HTTP_200
-#         else:
-#             raise falcon.HTTPError(falcon.HTTP_400, 'Incorrect Endpoint Used.')
-
 class Consensus(object):
     """
         Endpoint client can call to get 

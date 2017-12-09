@@ -251,6 +251,7 @@ app.controller('BlockchainController', function ($rootScope, $scope, $http, sock
     });
 
     socket.on('accepted_new_block', function (data) {
+        socket.emit('do_consensus', { endpoint: 'consensus' });
         $scope.$apply(function () {
             // $scope.blocks.push(data);
             socket.emit('get_event', { endpoint: 'get-blockchain' });
