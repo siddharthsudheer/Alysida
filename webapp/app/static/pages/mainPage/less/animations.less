@@ -94,3 +94,32 @@
         transition-duration: 0s;
     }
 }
+
+.menuslide {
+    &.ng-enter-prepare {
+        opacity: 0;
+    }
+    &.ng-enter,
+    &.ng-leave {
+        .transition(all 0.7s ease-out);
+        position: absolute;
+    }
+
+    &.ng-leave.ng-leave-active,
+    &.ng-enter {
+        opacity:0;
+        .transform(translateX(30px));
+    }
+
+    &.ng-enter.ng-enter-active,
+    &.ng-leave {
+        opacity: 1;
+        .transform(translateX(0px));
+    }
+
+    &.ng-enter-stagger {
+        .transition-delay(0.3s);        
+        -webkit-transition-duration: 0s;
+        transition-duration: 0s;
+    }
+}

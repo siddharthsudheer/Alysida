@@ -829,6 +829,45 @@ h6 {
   -webkit-transition-duration: 0s;
   transition-duration: 0s;
 }
+.menuslide.ng-enter-prepare {
+  opacity: 0;
+}
+.menuslide.ng-enter,
+.menuslide.ng-leave {
+  -webkit-transition: all 0.7s ease-out;
+  -moz-transition: all 0.7s ease-out;
+  -ms-transition: all 0.7s ease-out;
+  -o-transition: all 0.7s ease-out;
+  transition: all 0.7s ease-out;
+  position: absolute;
+}
+.menuslide.ng-leave.ng-leave-active,
+.menuslide.ng-enter {
+  opacity: 0;
+  -webkit-transform: translateX(30px);
+  -moz-transform: translateX(30px);
+  -ms-transform: translateX(30px);
+  -o-transform: translateX(30px);
+  transform: translateX(30px);
+}
+.menuslide.ng-enter.ng-enter-active,
+.menuslide.ng-leave {
+  opacity: 1;
+  -webkit-transform: translateX(0px);
+  -moz-transform: translateX(0px);
+  -ms-transform: translateX(0px);
+  -o-transform: translateX(0px);
+  transform: translateX(0px);
+}
+.menuslide.ng-enter-stagger {
+  -webkit-transition-delay: 0.3s;
+  -moz-transition-delay: 0.3s;
+  -ms-transition-delay: 0.3s;
+  -o-transition-delay: 0.3s;
+  transition-delay: 0.3s;
+  -webkit-transition-duration: 0s;
+  transition-duration: 0s;
+}
 .ui-notification.alysida {
   background-color: rgba(0, 0, 0, 0.65);
   /* .top */

@@ -4,8 +4,8 @@
         <div class="double-bounce2"></div>
     </div>
 
-    <div ng-show="loadingDone">
-        <div class="block fade" ng-repeat="block in blocks | reverse">
+    <div ng-animate-children="true">
+        <div class="block fade" ng-repeat="block in blocks | reverse" ng-if="loadingDone">
             <div class="top">
                 <div class="left">
                         <h2>Block #{{block.block_num}}</h2>

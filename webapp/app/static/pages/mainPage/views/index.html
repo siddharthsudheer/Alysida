@@ -23,9 +23,9 @@
 </head>
 
 <body ng-controller="MainController" ng-cloak ng-class="{'no-scroll' : newPeerFormOpen}">
-    <div id="header_items">
+    <div id="header_items" ng-animate-children="true">
 
-        <div class="diamond_btn" ng-click="discoverPeers()">
+        <div class="diamond_btn menuslide" ng-click="discoverPeers()" ng-show="menuReady">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">wifi_tethering</i>
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="diamond_btn" ng-click="doConsensus()">
+        <div class="diamond_btn menuslide" ng-click="doConsensus()" ng-if="menuReady">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">repeat_one</i>
@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        <div class="diamond_btn" ng-click="go('/add-transaction')">
+        <div class="diamond_btn menuslide" ng-click="go('/add-transaction')" ng-if="menuReady">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">playlist_add</i>
@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="diamond_btn" ng-click="go('/transactions')">
+        <div class="diamond_btn menuslide" ng-click="go('/transactions')" ng-if="menuReady">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">library_add</i>
@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <div class="diamond_btn" ng-click="go('/')">
+        <div class="diamond_btn menuslide" ng-click="go('/')" ng-if="menuReady">
             <div class="diamond"></div>
             <div class="wrapper">
                 <i class="material-icons">layers</i>
@@ -112,7 +112,7 @@
         </div>
     </div>
     
-    <div ng-view class="fadePage"></div>
+    <div ng-view class="fadePage" ng-animate-children="true"></div>
 
 
     <div id="main_loader" ng-show="mainLoading" class="fade">

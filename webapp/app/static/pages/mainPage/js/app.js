@@ -61,6 +61,10 @@ app.controller('MainController', function ($rootScope, $timeout, $scope, $locati
     $rootScope.loading_msg = '';
     $rootScope.mainLoading = false;
     $rootScope.newPeerFormOpen = false;
+    $scope.menuReady = false;
+    $timeout(function () {
+        $scope.menuReady = true;
+    },1000);
     $scope.go = function ( path ) {
         $location.path( path );
     };
@@ -308,14 +312,16 @@ app.controller('TransactionsController', function ($timeout, $rootScope, $scope,
     };
 });
 
-app.controller('BlockchainController', function ($rootScope, $scope, $http, socket, Notification) {
+app.controller('BlockchainController', function ($timeout, $rootScope, $scope, $http, socket, Notification) {
     $scope.blocks = [];
     $scope.loadingDone = false;
     socket.emit('get_event', { endpoint: 'get-blockchain' });
     socket.on('get_event_resp', function (response) {
         $scope.$apply(function () {
             $scope.blocks = response.data.blockchain.blocks;
-            $scope.loadingDone = true;
+            $timeout(function () {
+                $scope.loadingDone = true;
+            },1000);
         });
     });
 
