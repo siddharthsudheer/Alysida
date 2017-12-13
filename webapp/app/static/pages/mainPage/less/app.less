@@ -3,7 +3,8 @@
 @import "block.less";
 @import "add_txn.less";
 @import "animations.less";
-
+@import "ui-notification.less";
+@import "tooltip.less";
 
 
 .pulser(@color, @size) {
@@ -238,7 +239,7 @@
 
 #peers {
     z-index: 5;
-    position: fixed;
+    position: absolute;
     height: 100%;
     top: 0;
     left: 0;
@@ -262,12 +263,12 @@
             height: 59px;
             position: absolute;
             border-radius: 50%;
-            opacity: 0.6;
+            opacity: 0.85;
             .transform(scale(1));
             .transition(all .4s cubic-bezier(0,0,0.3,1));
         }
 
-        .material-icons {
+        > .material-icons {
             z-index: 2;
             position: absolute;
             top: 50%;
@@ -275,7 +276,7 @@
             transform: translate(-50%, -50%);
             font-size: 24px;
             margin-top: -2px;
-            opacity: 0.7;
+            opacity: 0.65;
             .transition(all .4s cubic-bezier(0,0,0.3,1));
         }
 
@@ -350,9 +351,9 @@
 
 
         &:hover {
-            &:after, .material-icons, .info { opacity: 1; }
+            &:after, > .material-icons, .info { opacity: 1; }
             &:after { .transform(scale(1.05)); }
-            .material-icons { opacity: 1 }
+            > .material-icons { opacity: 1 }
             .info {
                 visibility: visible;
                 .ip, .status {
@@ -369,7 +370,7 @@
                     content: '';
                     border-color: @sky-blue;
                 }
-                .material-icons, .info { color: @sky-blue; }
+                > .material-icons, .info { color: @sky-blue; }
             }
         }/* &:hover */ 
 
@@ -379,7 +380,7 @@
                 background-color: @color;
                 box-shadow: -7px 1px 0 -1px darken(@color, 35%);
             }
-            .material-icons {
+            > .material-icons {
                 color: darken(@color, 50%);
             }
 
@@ -391,7 +392,7 @@
         }
 
         &.registered {
-            &:after, .material-icons { opacity: 1; }
+            &:after, > .material-icons { opacity: 1; }
             .colorer(#95d950);
             .pulser(#95d950, 260px);
             &:nth-child(1) { .animation-delay(350ms);}
@@ -429,7 +430,7 @@
         }
 
         &.btn {
-            opacity: 0.5;
+            opacity: 0.75;
             width: 54px;
             height: 52px;
             .transition(all 0.2s cubic-bezier(0,0,0.3,1));
@@ -442,7 +443,7 @@
                 .transition(all 0.2s cubic-bezier(0,0,0.3,1));
             }
 
-            .material-icons {
+            > .material-icons {
                 color: @sky-blue-dark;
                 margin-top: 0;
             }
@@ -535,4 +536,12 @@
 
 [ng\:cloak], [ng-cloak], .ng-cloak {
     display: none !important;
-  }
+}
+
+// .add_peer_form {
+//     position: absolute;
+//     left: 70px;
+//     background: rgba(0,0,0,0.65);
+//     top: -16px;
+//     padding: 16px 32px;
+// }

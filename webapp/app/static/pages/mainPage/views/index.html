@@ -14,22 +14,16 @@
     <link rel="stylesheet" href="lib/jquery-ui/themes/smoothness/jquery-ui.css"/>   
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Fira+Mono" rel="stylesheet">
+    <link rel="stylesheet" href="lib/angular-ui-notification/dist/angular-ui-notification.min.css">
     <link rel="stylesheet" href="pages/mainPage/css/app.css">
 
     <script src="https://cdn.socket.io/socket.io-1.4.0.js"></script>
     
 </head>
 
-<body ng-controller="MainController" ng-cloak>
+<body ng-controller="MainController" ng-cloak ng-class="{'no-scroll' : newPeerFormOpen}">
     <div id="header_items">
-
-        <!-- <div class="diamond_btn">
-            <div class="diamond"></div>
-            <div class="wrapper">
-                <i class="material-icons">verified_user</i>
-                <p class="ip">Register with peers</p>
-            </div>
-        </div> -->
 
         <div class="diamond_btn" ng-click="discoverPeers()">
             <div class="diamond"></div>
@@ -83,24 +77,37 @@
 
 
     <div id="peers" ng-controller="PeersController">
-        <div class="peer fade {{ peer.status }}" ng-repeat="peer in peers | orderBy:'status'">
-            <i class="material-icons">perm_identity</i>
-            <div class="info">
-                <div>
-                    <p class="ip">{{ peer.peer_ip }}</p>
-                    <p class="status">{{ peer.status }}</p>
+        <div ng-if="peersReady" ng-animate-children="true">
+            <div class="peer btn add peerslide" ng-click="showNewPeerForm($event)"  ng-class="{'active' : newPeerFormOpen}" ng-if="peersReady">
+                <i class="material-icons">person_add</i>
+                <div class="info">
+                    <p class="ip">Add Peers</p>
                 </div>
-                <div class="peer_action">
-                    <button class="accept_btn" ng-click="acceptPeer(peer.peer_ip)">Accept</button>
-                    <button class="register_btn" ng-click="registerWithPeer(peer.peer_ip)">Register</button>
-                    <button class="ask_btn" ng-click="askPeerForUpdate(peer.peer_ip)">Ask Update</button>
+                <div class="add_peer_form">
+                        <div class="formbox">
+                            <div class="input">
+                                <p>Peer IP</p>
+                                <input type = "number" name="newPeerIp" id="newPeerIp" ng-model="addNewPeer.peer_ip" required>
+                            </div>
+                            <div class="addBtn" ng-click="addNewPeer()">Add<i class="material-icons">add_circle_outline</i></div>
+                        </div>
+
+                        <div class="close_btn" ng-click="closeNewPeerForm($event)"><i class="material-icons">close</i></div>
                 </div>
             </div>
-        </div>
-        <div class="peer btn add fade">
-            <i class="material-icons">person_add</i>
-            <div class="info">
-                <p class="ip">Add Peers</p>
+            <div class="peer {{ peer.status }} peerslide" ng-repeat="peer in peers | orderBy:'status'" ng-if="peersReady">
+                <i class="material-icons">perm_identity</i>
+                <div class="info">
+                    <div>
+                        <p class="ip">{{ peer.peer_ip }}</p>
+                        <p class="status">{{ peer.status }}</p>
+                    </div>
+                    <div class="peer_action">
+                        <button class="accept_btn" ng-click="acceptPeer(peer.peer_ip)">Accept</button>
+                        <button class="register_btn" ng-click="registerWithPeer(peer.peer_ip)">Register</button>
+                        <button class="ask_btn" ng-click="askPeerForUpdate(peer.peer_ip)">Ask Update</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -118,6 +125,8 @@
         </div>
     </div>
 
+    <div class="overlay" ng-class="{'active' : newPeerFormOpen}"></div>
+
     <script type="text/javascript" src="lib/jquery/dist/jquery.js"></script>
     <script type="text/javascript" src="lib/jquery-ui/jquery-ui.js"></script>
     <script type="text/javascript" src="lib/lodash/dist/lodash.js"></script>
@@ -126,6 +135,7 @@
     <script type="text/javascript" src="lib/angular-route/angular-route.js"></script>
     <script type="text/javascript" src="lib/angular-ui-date/dist/date.js"></script>
     <script type="text/javascript" src="lib/angular-animate/angular-animate.js"></script>
+    <script type="text/javascript" src="lib/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
     <script type="text/javascript" src="pages/mainPage/js/app.js"></script>
 
 </body>

@@ -1,0 +1,123 @@
+@import "app/static/pages/mainPage/less/variables.less";
+@import "app/static/pages/mainPage/less/base.less";
+
+.ui-notification.alysida {
+    background-color: rgba(0,0,0,0.65);
+
+    .top {
+        .material-icons.close {
+            color: white;
+            opacity: 0.2;
+            .general-transition();
+            padding: 10px 10px 0 16px;
+            position: absolute;
+            right: 0;
+            top: -1px;
+
+        }/* .material-icons.close */
+    
+        > h3 {
+            font-weight: 400;
+            text-transform: uppercase;
+            padding: 10px 16px 6px 16px!important;
+            text-align: left;
+            border-bottom: none;
+            font-size: 15px;
+        }
+    }/* .top */
+
+    .message {
+        margin: 0px 16px 10px 16px;
+        .reg {
+            font-size: 14px;
+        }
+        .ip {
+            font-size: 10pt;
+            font-family: @code-font;
+            font-weight: 600;
+            margin-left: 5px;
+            line-height: 24px;
+            height: 24px;
+            padding: 3px 12px;
+            border-radius: 4px;
+            max-width: 110px;
+            text-overflow: ellipsis;
+        }
+
+        .status {
+            font-weight: 500;
+            font-size: 11px;
+            letter-spacing: 0.2pt;
+            text-transform: uppercase;
+            line-height: 25px;
+            top: 5px;
+            position: relative;
+            &.appr-pending {
+                color: @green;
+            }
+        }/* status */
+    }/* message */
+    // .notif-colorer(@sky-blue);
+
+    &.clickable:hover {
+        background-color: rgba(0,0,0,0.75);
+        opacity: 1;
+        .top {
+            .material-icons.close {
+                opacity: 0.5;
+            }
+        }/* .top */
+    }/* &.clickable:hover */
+
+    &.success {
+        @succ_green:rgba(179, 219, 67, 1);
+        .notif-colorer(@succ_green, 1.3);
+    }
+
+    &.info {
+        .notif-colorer(@sky-blue, 1.3);
+    }
+
+    &.warning {
+        .notif-colorer(@yellow, 1.3);
+    }
+
+    &.error {
+        .notif-colorer(@red,1.35);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    .notif-colorer(@color, @opacity:1) {
+        @op: @opacity;
+        .top {        
+            > h3 {
+                color: @color;
+            }
+        }/* .top */
+        .message {
+            .reg {
+                color: fade(@color, 60%*@op);
+            }
+            .ip {
+                font-weight: 500 !important;
+                color: fade(@color, 60%*@op);
+                border: 1px solid fade(@color, 15%*@op);
+                background: fade(@color, 5%*@op);
+            }
+    
+            .status {
+                color: fade(@color, 60%*@op);;
+            }/* status */
+        }/* message */
+    }/* &.success */
+}/* .ui-notification.alysida */

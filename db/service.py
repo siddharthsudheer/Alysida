@@ -115,48 +115,51 @@ def get_timestamp():
     timestamp = date.datetime.now()
     return timestamp.strftime(timestamp_format)
 
+def add_new_peer_address(parsed, adding_status):
+    # When you manually add peers or
+    # discover peers the adding_status is 
+    # 'unregistered'
+    peer = parsed
+    peer['status'] = adding_status
+    
+    #check if already in DB:
+    exist_query = "SELECT * FROM peer_addresses WHERE IP = '{}'".format(peer['ip'])
+    exist_result = query("peer_addresses", exist_query)
 
-def add_new_peer_address(parsed, db_status):
-        if db_status == 'acceptance-pending':
-            peer_addrs = list(map(lambda x: (x[0],x[1]), parsed['ips']))
+    # they dont exist regardless
+    # of adding_status
+    if not exist_result:
+        vals = "('{}', '{}', '{}')".format(peer['ip'], peer['pub_key'], peer['status'])
+        sql = insert_into("peer_addresses", vals)
+        db_resp = post("peer_addresses", sql)
+
+        if db_resp:
+            return ({"title": "Success: Successfully Added"}, falcon.HTTP_201, )
         else:
-            peer_addrs = list(map(lambda x: (x,'unregistered'), parsed['ips']))
-        
-        multi_insert = "INSERT INTO peer_addresses (IP, PUBLIC_KEY, REGISTRATION_STATUS) VALUES (?, ?, '{}')".format(db_status)
-        db_resp = post_many("peer_addresses", multi_insert, peer_addrs)
-        
-        if db_resp != True:
-            final_title = 'Error'
-            final_msg = db_resp
-            final_status = falcon.HTTP_500
-
-            msg = {
-                'Title': final_title,
-                'Message': final_msg
-            }
+            return ({"title": "Failed: Something went wrong"}, falcon.HTTP_500)
+    
+    else:
+        if adding_status == 'unregistered':
+            return ({"title": "Success: Successfully Added"}, falcon.HTTP_201)
         else:
-            # Checking if they already registered earlier but haven't been
-            # notified that they were accepted.
-            if db_status == 'acceptance-pending':
-                just_ips = list(map(lambda x: x[0], parsed['ips']))
-                peer_addrs_2 = str(tuple(just_ips)).replace(",)",")")
-            else:
-                peer_addrs_2 = str(tuple(parsed['ips'])).replace(",)",")")
-            sql_query = "SELECT * FROM peer_addresses WHERE REGISTRATION_STATUS='registered' AND IP IN {}".format(peer_addrs_2)
-            query_result = query("peer_addresses", sql_query)
-            print(query_result)
+            #check if they were approved as 'registered' or not
+            db_ip, db_pk, db_stat = exist_result['rows'][0]
+            if db_stat == "registered":
+                return ({"title": "Success: Successfully Registered"}, falcon.HTTP_201)
 
-            if query_result:
-                final_msg = 'Success: Successfully Registered'
-                final_status = falcon.HTTP_200
-            else:
-                final_msg = 'Success: Successfully Added'
-                final_status = falcon.HTTP_201
+            elif db_stat == "unregistered":
+                update_query = """
+                UPDATE peer_addresses 
+                SET PUBLIC_KEY = '{}', REGISTRATION_STATUS = 'acceptance-pending' 
+                WHERE REGISTRATION_STATUS = 'unregistered' AND IP = '{}'""".format(peer['pub_key'], str(db_ip))
+                db_resp = post("peer_addresses", update_query)
+                return ({"title": "Success: Successfully Added"}, falcon.HTTP_201)
+            
+            elif db_stat == "acceptance-pending":
+                return ({"title": "Wait: Yet to be accepted."}, falcon.HTTP_201)
 
-            msg = {
-                'title': final_msg
-            }
-        return (msg, final_status)
+            else:
+                return ("Unauthorized", falcon.HTTP_401)
 
 
 def ip_db_diff(my_db, their_db):

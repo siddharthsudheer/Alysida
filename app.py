@@ -14,8 +14,8 @@ def create_app(db_store):
 
 
     # Client-Facing Routes
+    api.add_route('/register-with-peer', server.RegisterWithPeer())  # POST
     api.add_route('/add-peer-addresses', server.AddPeerAddresses())  # POST
-    api.add_route('/register-me', server.RegisterMe())  # GET
     api.add_route('/get-peer-addresses', server.GetPeerAddresses())  # GET
     api.add_route('/discover-peer-addresses', server.DiscoverPeerAddresses(db_store))  # GET
     api.add_route('/add-new-transaction', server.AddNewTransaction())  # POST
@@ -23,12 +23,12 @@ def create_app(db_store):
     api.add_route('/mine', server.MineBlock())  # POST
     api.add_route('/get-blockchain', server.GetBlockchain())  # GET
     api.add_route('/consensus', server.Consensus())  # GET
-
+    api.add_route('/request-registration-update', server.RequestRegistrationUpdate())  # POST
+    api.add_route('/accept-new-registration', server.AcceptNewRegistration())  # POST
+   
     # Internal Routes
     api.add_route('/new-registration', server.AddNewRegistration())  # POST
-    api.add_route('/accept-new-registration', server.AcceptNewRegistration())  # POST
     api.add_route('/update-registration-status', server.UpdateRegistrationStatus())  # POST
-    api.add_route('/request-registration-update', server.RequestRegistrationUpdate())  # POST
     api.add_route('/serve-peer-addresses', server.ServePeerAddresses(db_store))  # GET
     api.add_route('/accept-new-transaction', server.AcceptNewTransaction())  # POST
     api.add_route('/accept-new-block', server.AcceptNewBlock())  # POST

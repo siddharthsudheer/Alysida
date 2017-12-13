@@ -23,11 +23,22 @@ start() {
 
 stop() {
     alysida_mykill ./webapp2/run.py
+    PIDS=( $(lsof -i -P -n | grep ':5200' | grep -v grep | awk '{print $2}') )
+    echo ${PIDS}
+    if [ ${#PIDS[@]} -gt 0 ]; then
+        for pid in "${PIDS[@]}"
+        do 
+            kill -9 $pid
+        done
+    fi
 }
 
+prod() {
+    alysida_mynohup ./webapp/run
+}
 
+${1}
 
-alysida_mynohup ./webapp/run
 
 MY_UUID="$(./scripts/uuidgen.py)"
 

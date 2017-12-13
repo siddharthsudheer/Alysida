@@ -1,0 +1,254 @@
+@import "app/static/pages/mainPage/less/variables.less";
+@import "app/static/pages/mainPage/less/base.less";
+
+#peers .peer.add.active:hover.btn,
+#peers .peer.add.active.btn {
+    opacity: 1;
+    border: none;
+    border-color: #0db4bb;
+    width: 61px;
+    height: 59px;
+    .transform(None);
+
+    > .material-icons {
+        color: white;
+        opacity: 1;
+        margin-top: -2px;
+        margin-left: -1px;
+    }
+
+    .info {
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    &:after {
+        .transform(scale(1.05));
+        border: none;
+        content: '';
+        left: 0;
+        width: 61px;
+        height: 59px;
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.85;
+    }
+}
+
+.no-scroll {
+    overflow: hidden !important;
+
+    #peers {
+        z-index: 1000;
+
+        .peer {
+            z-index: 10;
+            &:after {
+                box-shadow: none !important;
+            }
+            
+
+            &:hover {
+                cursor: default;
+                .info {
+                    display: none;
+                }
+                .transform(scale(1));
+
+                &:after {
+                    .transform(scale(1));
+                }
+            }
+
+            &.btn.add.active {
+                z-index: 1000;
+            }
+        }
+    }
+}
+
+.overlay {
+    z-index: 101;
+    position: absolute;
+    background-color: rgba(0,0,0,0.8);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    visibility: hidden;
+    .transition(all 0.6s cubic-bezier(0,0,0.3,1));
+
+    &.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.peer.btn.add {
+    &.active {
+        .transform(scale(1.05));
+        background: @sky-blue;
+        @shadow-color: @sky-blue-dark;
+        box-shadow: -7px 1px 0 -1px @shadow-color;
+        -webkit-box-shadow: -7px 1px 0 -1px @shadow-color;
+        .add_peer_form {
+            visibility: visible;
+            opacity: 1;
+            .transform(translateX(0px));
+            .close_btn {
+                .transform(translateY(-50%) translateX(0px));
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+
+    .add_peer_form {
+        position: absolute;
+        width: 280px;
+        padding: 8px 16px;
+        left: 80px;
+        top: -11px;
+        .transform(translateX(-50px));
+        background: #FFFFFF;
+        visibility: hidden;
+        z-index: 999;
+        border-radius: 11px;
+        .transition(all 0.3s cubic-bezier(0,0,0.3,1));
+
+        &:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            margin-top: -12px;
+            width: 0; height: 0;
+            border-right: 12px solid transparent;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+        }
+
+        &:after {
+            content: '';
+            position: absolute;
+            top: 40px;
+            right: 100%;
+            margin-top: -8px;
+            width: 0; height: 0;
+            border-right: 8px solid #FFFFFF;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+
+        .close_btn {
+            position: absolute;
+            right: -75px;
+            top: 49.5%;
+            z-index: 9;
+            .transform(translateY(-50%) translateX(-20px));
+            .transition(all 0.3s cubic-bezier(0,0,0.3,1));
+            .transition-delay(0.2s);
+            visibility: hidden;
+            opacity: 0;
+            padding: 16px;
+            box-sizing: border-box;
+            > i.material-icons {
+                font-size: 38px;
+                color: white;
+                cursor: pointer;
+                opacity: 0.5;
+                .transition(all 0.3s cubic-bezier(0,0,0.3,1));
+            }
+
+            &:hover {
+                > i.material-icons {
+                    .transform(scale(1.1));
+                    opacity: 0.85;
+                }
+            }
+        }
+    }/* add_peer_form */
+}/* .peer.btn.add */
+
+.add_peer_form {
+    text-align: left;
+    color: rgba(0,0,0,0.85);
+    .input, .addBtn {
+        display: inline-block;
+    }
+    .input {
+        width: 100%;
+        font-size: 14px;
+        p {
+            margin: 8px 0;
+            font-size: 14px;
+            font-weight: 700;
+            min-width: 72px;
+            text-transform: uppercase;
+            color: @sky-blue;
+            letter-spacing: 0.2pt;
+            text-align: left;
+            padding-left: 2px;
+        }
+
+        input {
+            padding: 8px;
+            width: 100%;
+            font-size: 14px;
+            border: none;
+            box-sizing: border-box;
+            font-weight: 300;
+            color: rgba(0, 0, 0, 0.65);
+            border-radius: 7px;
+            background: rgba(0, 0, 0, 0.075);
+            font-weight: 700;
+            margin: 8px 0;
+            border: 1px solid rgba(0,0,0,0.02);;
+            .general-transition();
+            font-family: @code-font;
+
+            &:hover {
+                border-color: rgba(0,0,0,0.18);
+            }
+
+            &:focus {
+                border-color: @sky-blue;
+            }
+        }
+    }
+
+    .addBtn {
+        .formbox {
+            z-index: 10;
+        }
+        float: right;
+        margin: 8px 0;
+        padding: 6px 24px 5px 28px;
+        border: none;
+        border-radius: 7px;
+        font-weight: 700;
+        color: @sky-blue;
+        text-transform: uppercase;
+        font-size: 13px;
+        line-height: 23px;
+        cursor: pointer;
+        border: 1px dashed @sky-blue;
+        background: transparent;
+
+        .transition(all 0.2s cubic-bezier(0,0,0.3,1));
+
+        &:hover {
+            color: white;
+            border: 1px solid @sky-blue;
+            background: @sky-blue;
+        }
+
+        .material-icons {
+            font-size: 16px;
+            top: 3px;
+            position: relative;
+            margin-left: 4px;
+        }
+    }
+}

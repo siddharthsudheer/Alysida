@@ -1,19 +1,35 @@
-var app = angular.module('alysida', ['ngResource', 'ngAnimate', 'ngRoute', 'ui.date'])
-    .config(['$routeProvider', function ($routeProvider) {
-        $routeProvider
-            .when('/', {
-                templateUrl: 'pages/mainPage/views/blockchain.html',
-                controller: 'BlockchainController'
-            })
-            .when('/transactions', {
-                templateUrl: 'pages/mainPage/views/transactions.html',
-                controller: 'TransactionsController'
-            })
-            .when('/add-transaction', {
-                templateUrl: 'pages/mainPage/views/add-transaction.html',
-                controller: 'AddTransactionController'
-            });
-    }]);
+var app = angular.module('alysida', [
+'ngResource', 
+'ngAnimate', 
+'ngRoute', 
+'ui.date', 
+'ui-notification'
+])
+.config(['$routeProvider','NotificationProvider', function ($routeProvider, NotificationProvider) {
+    $routeProvider
+        .when('/', {
+            templateUrl: 'pages/mainPage/views/blockchain.html',
+            controller: 'BlockchainController'
+        })
+        .when('/transactions', {
+            templateUrl: 'pages/mainPage/views/transactions.html',
+            controller: 'TransactionsController'
+        })
+        .when('/add-transaction', {
+            templateUrl: 'pages/mainPage/views/add-transaction.html',
+            controller: 'AddTransactionController'
+        });
+    NotificationProvider.setOptions({
+        delay: 50000,
+        startTop: 32,
+        startRight: 16,
+        verticalSpacing: 16,
+        horizontalSpacing: 16,
+        positionX: 'right',
+        positionY: 'bottom',
+        templateUrl: 'pages/mainPage/views/notification-template.html',
+    });
+}]);
 
 
 app.factory('socket', ['$rootScope', function ($rootScope) {
@@ -30,15 +46,21 @@ app.factory('socket', ['$rootScope', function ($rootScope) {
     };
 }]);
 
+
 app.filter('reverse', function() {
     return function(items) {
       return items.slice().reverse();
     };
 });
 
-app.controller('MainController', function ($rootScope, $timeout, $scope, $location, $rootScope, $http, $interval, socket) {
+///////////////////////////////////////////////////////////////
+//    CONTROLLERS
+///////////////////////////////////////////////////////////////
+
+app.controller('MainController', function ($rootScope, $timeout, $scope, $location, $rootScope, $http, $interval, Notification, socket) {
     $rootScope.loading_msg = '';
     $rootScope.mainLoading = false;
+    $rootScope.newPeerFormOpen = false;
     $scope.go = function ( path ) {
         $location.path( path );
     };
@@ -48,12 +70,18 @@ app.controller('MainController', function ($rootScope, $timeout, $scope, $locati
         $scope.location = $location.path();
     });
 
+    $scope.closeNewPeerForm = function closeNewPeerForm($event) {
+        $rootScope.newPeerFormOpen = false;
+        $event.stopPropagation();
+    };
+
     $scope.doConsensus = function doConsensus() {
         $rootScope.loading_msg = 'Finding Consensus Among Peers...';
         $rootScope.mainLoading = true;
         console.log('Finding Consensus Among Peers...');
         socket.emit('do_consensus', { endpoint: 'consensus' });
     };
+
     socket.on('do_consensus_resp', function (response) {
         console.log('done consensus');
         $scope.$apply(function () {
@@ -71,38 +99,104 @@ app.controller('MainController', function ($rootScope, $timeout, $scope, $locati
     };
 });
 
-app.controller('PeersController', function ($timeout, $rootScope, $scope, $http, socket) {
+app.controller('PeersController', function ($filter, $timeout, $rootScope, $scope, $http, socket, Notification) {
     $scope.peers = [];
 
+    $scope.peersReady = false;
     socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     socket.on('get_peers_resp', function (response) {
-        // if ($scope.peers > 0) {
-        //     var response_peers = response.data.peers;
-        //     for (var i; i < response_peers.length; i++) {
-        //         if ()
-        //     }
-        // } else {
-        //     $scope.$apply(function () {
-        //         $scope.peers = response.data.peers;
-        //     });
-        // }
-
-        $scope.$apply(function () {
-            $scope.peers = response.data.peers;
-        });
+        $scope.peers = $filter('orderBy')(response.data.peers, 'status');
+        $timeout(function () {
+            $scope.peersReady = true;
+        },1000);
     });
 
-    socket.on('new_peer', function (data) {
-        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
-    });
+    socket.on('new_peer_request', function (response) {
+        var notifMsg = '<span class="reg">Received from : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span>';
+    
+        Notification.info({title: 'New Peer Request', message: notifMsg});
 
-    socket.on('peer_discovery_result', function (data) {
-        $timeout(function() { $rootScope.mainLoading = false;}, 1000);
-        if (data.difference != 'No Difference.') {
-            socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
-            console.log(data);
+        var new_peer = {
+            peer_ip: response.data.peer_ip,
+            status: response.data.status
         }
+        $scope.peers.push(new_peer)
     });
+
+    socket.on('registered_with_new_peer', function (response) {
+        var notifMsg = '<span class="reg">Registered with : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span> <br> \
+                        <span class="status">Approval Pending</span>';
+        Notification.warning({title: 'Registered', message: notifMsg});
+        var new_peer = {
+            peer_ip: response.data.peer_ip,
+            status: response.data.status
+        }
+        $scope.peers.push(new_peer)
+    });
+
+    socket.on('registration_success_waiting_for_handshake', function (response) {
+        var notifMsg = '<span class="reg">Registered with : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span> <br> \
+                        <span class="status">Success: Handshake Pending</span>';
+        Notification.success({title: 'Successfully Registered', message: notifMsg});
+    });
+
+    socket.on('registration_failed', function (response) {
+        var notifMsg = '<span class="reg">Peer : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span> <br> \
+                        <span class="status">Check console for more info</span>';
+        Notification.error({title: 'Failed Registration', message: notifMsg});
+    });
+
+    socket.on('peer_not_reachable', function (response) {
+        var notifMsg = '<span class="reg">Peer : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span> <br> \
+                        <span class="status">Unable to make contact with peer</span>';
+        Notification.error({title: 'Peer Unreachable', message: notifMsg});
+    });
+
+    socket.on('accepted_peer', function (response) {
+        var notifMsg = '<span class="reg">Connected With Peer : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span> <br> \
+                        <span class="status">Success</span>';
+        Notification.success({title: 'Accepted Peer Request', message: notifMsg});
+    });
+
+    socket.on('accepted_by_peer', function (response) {
+        var notifMsg = '<span class="reg">Connected With Peer : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span> <br> \
+                        <span class="status">Success: Your request was accepted</span>';
+        Notification.success({title: 'Peer Request Accepted', message: notifMsg});
+    });
+
+    socket.on('yet_to_be_accepted_by_peer', function (response) {
+        var notifMsg = '<span class="reg">Peer : </span> \
+                        <span class="ip">'+response.data.peer_ip+'</span> <br> \
+                        <span class="status">Peer is yet to accept your request</span>';
+        Notification.warning({title: 'Request Approval Pending', message: notifMsg});
+    });
+
+    socket.on('new_peers_discovered', function (response) {
+        var notifMsg = '<span class="reg">Found new peers using PeerDiscovery</span> \
+                        <br> \
+                        <span class="status">Success</span>';
+        Notification.success({title: 'New Peers Found', message: notifMsg});
+    });
+
+    socket.on('no_new_peers_discovered', function (response) {
+        var notifMsg = '<span class="reg">No new peers discovered during PeerDiscovery</span> \
+                        <br> \
+                        <span class="status"></span>';
+        Notification.info({title: 'No New Peers', message: notifMsg});
+    });
+
+    //Actions
+    $scope.showNewPeerForm = function showNewPeerForm($event) {
+        $rootScope.newPeerFormOpen = true;
+        $event.stopPropagation();
+    }
 
     $scope.acceptPeer = function acceptPeer(peer_ip) {
         $scope.peer_obj = {
@@ -110,48 +204,23 @@ app.controller('PeersController', function ($timeout, $rootScope, $scope, $http,
         };
         $scope.peer_obj.ips.push(peer_ip);
         socket.emit('post_peers', { endpoint: 'accept-new-registration', data: $scope.peer_obj });
-        socket.on('post_peers_resp', function (response) {
-            if (response.data == 'success') {
-                socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
-            };
-            
-            if (response.data == 'fail') {
-                console.log('fail');
-                alert(response.resp);
-            }
-            
-        });
     };
 
     $scope.registerWithPeer = function registerPeer(peer_ip) {
-        socket.emit('get_peers', { endpoint: 'register-me' });
-    };
-
-    $scope.askPeerForUpdate = function askPeerForUpdate(peer_ip) {
         $scope.peer_obj = {
-            ip: ''
+            peer_ip: []
         };
-        $scope.peer_obj.ip = peer_ip;
-        socket.emit('post_peers', { endpoint: 'accept-new-registration', data: $scope.peer_obj });
-        socket.on('post_peers_resp', function (response) {
-            if (response.data == 'success') {
-                socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
-            };
-            
-            if (response.data == 'fail') {
-                console.log('fail');
-                alert(response.resp);
-            }
-            
-        });
+        $scope.peer_obj.peer_ip.push(peer_ip);
+        socket.emit('post_peers', { endpoint: 'register-with-peer', data: $scope.peer_obj });
     };
 
     $scope.askPeerForUpdate = function askPeerForUpdate(peer_ip) {
-        socket.emit('get_peers', { endpoint: 'register-me' });
+        $scope.registerWithPeer(peer_ip);
     };
 });
 
-app.controller('AddTransactionController', function ($rootScope, $scope, $location, socket) {
+
+app.controller('AddTransactionController', function ($rootScope, $scope, $location, socket, Notification) {
     $scope.txn = {
         sender: null,
         receiver: null,
@@ -176,7 +245,7 @@ app.controller('AddTransactionController', function ($rootScope, $scope, $locati
     }
 });
 
-app.controller('TransactionsController', function ($timeout, $rootScope, $scope, $http, socket) {
+app.controller('TransactionsController', function ($timeout, $rootScope, $scope, $http, socket, Notification) {
     $scope.txns = [];
     $scope.new_txns = [];
     $scope.loadingDone = false;
@@ -239,7 +308,7 @@ app.controller('TransactionsController', function ($timeout, $rootScope, $scope,
     };
 });
 
-app.controller('BlockchainController', function ($rootScope, $scope, $http, socket) {
+app.controller('BlockchainController', function ($rootScope, $scope, $http, socket, Notification) {
     $scope.blocks = [];
     $scope.loadingDone = false;
     socket.emit('get_event', { endpoint: 'get-blockchain' });

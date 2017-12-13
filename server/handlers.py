@@ -20,12 +20,7 @@ class Consensus(object):
     """    
     def on_get(self, req, resp):
         blockchain = Chain()     
-        replaced = blockchain.resolve_conflicts()
-
-        if replaced:
-            final_title, final_msg = "Success", "Our chain was replaced"
-        else:
-            final_title, final_msg = "Success", "Our chain is authoritative"
+        blockchain, final_title, final_msg = utils.resolve_blockchain(blockchain)
 
         msg = {
             "title": final_title,
@@ -85,12 +80,7 @@ class MineBlock(object):
         """
         payload = utils.parse_post_req(req)['txn_hashes']
         blockchain = Chain()
-        replaced = blockchain.resolve_conflicts()
-        # if replaced, then check if selected txns
-        # are still in unconfirmed pool or not.
-        # if not, msg user telling them to re-select
-
-        # if not replaced.. continue
+        blockchain, cons_final_title, cons_final_msg = utils.resolve_blockchain(blockchain)
 
         new_block = Block(txn_hashes=payload)
         new_block.get_txn_recs()
@@ -113,9 +103,11 @@ class MineBlock(object):
         #     'peer_responses': 'all good'
         # }
 
+        utils.notifier("block_successfully_mined", {'block_hash':new_block.block_hash})
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_201
         resp.body = json.dumps(msg)
+
 
 class AcceptNewBlock(object):
     def on_post(self, req, resp):
@@ -155,7 +147,7 @@ class AcceptNewBlock(object):
                     'message': "New Block Added",
                     'block_data': res
                 }
-                utils.notifier("accepted_new_block", msg)
+                utils.notifier("accepted_new_block", {'block_hash': new_block.block_hash})
                 resp.content_type = 'application/json'
                 resp.status = falcon.HTTP_201
                 resp.body = json.dumps(msg)
@@ -171,7 +163,7 @@ class AcceptNewBlock(object):
                         'message': "New Block Added",
                         'block_data': res
                     }
-                    utils.notifier("accepted_new_block", msg)
+                    utils.notifier("accepted_new_block", {'block_hash': new_block.block_hash})
                     resp.content_type = 'application/json'
                     resp.status = falcon.HTTP_201
                     resp.body = json.dumps(msg)
@@ -207,8 +199,8 @@ class AcceptNewTransaction(object):
             'Txn_data': results
         }
 
-        utils.notifier("accepted_new_txn", results)
-
+        
+        utils.notifier("received_new_txn",  {'txn_hash': txn_rec.txn_hash})
         resp.content_type = 'application/json'
         resp.status = resp_status
         resp.body = json.dumps(msg)
@@ -241,7 +233,7 @@ class AddNewTransaction(object):
         #     'Txn_data': send_payload,
         #     'peer_responses': "all good"
         # }
-
+        utils.notifier("added_new_txn",  {'txn_hash': txn_rec.txn_hash})
         resp.content_type = 'application/json'
         resp.status = resp_status
         resp.body = json.dumps(msg)
@@ -261,87 +253,90 @@ class GetUnconfirmedTransactions(object):
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(response)
 
-
-class RegisterMe(object):
+class RegisterWithPeer(object):
     """
         Endpoint that client will call
-        to register themselves with the 
-        other nodes
+        to register themselves with 
+        an unregistered peer.
     """
-    def on_get(self, req, resp):
-        sql_query = "SELECT IP FROM node_prefs"
-        my_ip = str(DBService.query("node_prefs", sql_query)['rows'][0])
+    def on_post(self, req, resp):
+        parsed = utils.parse_post_req(req)
+        peer_ip = parsed['peer_ip'][0]
+        ip_query = "SELECT IP FROM node_prefs"
+        my_ip = str(DBService.query("node_prefs", ip_query)['rows'][0])
         my_pub_key = str(Certs().public_key)
-        payload_to_send_peers = dict({'ips': [[my_ip, my_pub_key]]})
+        payload_to_send_peers = {
+                'ip': str(my_ip), 
+                'pub_key': str(my_pub_key)
+            }
 
-        sql_query = "SELECT IP FROM peer_addresses WHERE IP!='{}' AND (REGISTRATION_STATUS=='unregistered' OR REGISTRATION_STATUS=='registration-pending')".format(my_ip)
+        sql_query = "SELECT *  FROM peer_addresses WHERE IP='{}'".format(peer_ip)
         query_result = DBService.query("peer_addresses", sql_query)
 
-        if not query_result: # if 0 results for unregistered peers addrs returned
-            final_title = 'Success'
-            final_msg = 'No unregistered peers. You are already registered with all known peers.'
-            final_status = falcon.HTTP_200
+        #Given IP has not been added to DB yet
+        if not query_result:
+            utils.notifier("no_such_peer_in_db", {'peer_ip': peer_ip})
+            final_title, final_msg = "Fail", "Peer '{}' not found in DB.".format(peer_ip)
+            msg = { 'title': final_title, 'message': final_msg }
+            resp.content_type = 'application/json'
+            resp.status = falcon.HTTP_404
+            resp.body = json.dumps(msg)
+
         else:
-            peer_ips = query_result['rows']
-            failed_responses = list()
-            success_response_ips = list()
+            peer_url = url = 'http://{}:4200/new-registration'.format(peer_ip)
+            json_resp = dict()
 
-            for peer in peer_ips:
-                url = 'http://{}:4200/new-registration'.format(peer)
-                json_resp = dict()
-
+            try:
+                peer_resp = requests.post(peer_url, data=json.dumps(payload_to_send_peers))
+                json_resp = peer_resp.json()
+            except requests.exceptions.RequestException as e:
+                json_resp['title'] = 'Peer not reachable'
+                print( '**{}\n**{}\n**{}'.format(json_resp['title'], peer, e) )
+            
+            if json_resp['title'] == "Success: Successfully Added":
+                update_query = "UPDATE peer_addresses SET PUBLIC_KEY = 'unreceived', REGISTRATION_STATUS = 'registration-pending' WHERE IP = '{}'".format(peer_ip)
+                DBService.post("peer_addresses", update_query)
+                utils.notifier("registered_with_new_peer", {'peer_ip': peer_ip})
+                final_title, final_msg = "Success", "You have registered with {}".format(peer_ip)
+                msg = { 'title': final_title, 'message': final_msg }
+                resp.content_type = 'application/json'
+                resp.status = falcon.HTTP_200
+                resp.body = json.dumps(msg)
+            
+            elif json_resp['title'] == "Success: Successfully Registered":
+                update_url = 'http://{}:4200/request-registration-update'.format(peer_ip)
+                update_resp = dict()
+                my_ip_payload = dict({'ip': my_ip})
+                utils.notifier("registration_success_waiting_for_handshake", {'peer_ip': peer_ip})
                 try:
-                    peer_resp = requests.post(url, data=json.dumps(payload_to_send_peers))
-                    json_resp = peer_resp.json()
+                    peer_update_resp = requests.post(update_url, data=json.dumps(my_ip_payload))
+                    update_resp = peer_update_resp.json()
                 except requests.exceptions.RequestException as e:
-                    json_resp['title'] = 'Peer not reachable'
-                    print( '**{}\n**{}\n**{}'.format(json_resp['title'], peer, e) )
-
-                if json_resp['title'] == "Success: Successfully Added":
-                    success_response_ips.append('{}'.format(peer))
-                    update_query = "UPDATE peer_addresses SET PUBLIC_KEY = 'unreceived', REGISTRATION_STATUS = 'registration-pending' WHERE IP = '{}'".format(peer)
-                    DBService.post("peer_addresses", update_query)
-                elif json_resp['title'] == "Success: Successfully Registered":
-                    update_url = 'http://{}:4200/request-registration-update'.format(peer)
-                    update_resp = dict()
-                    my_ip_payload = dict({'ip': my_ip})
-
-                    try:
-                        peer_update_resp = requests.post(update_url, data=json.dumps(my_ip_payload))
-                        update_resp = peer_update_resp.json()
-                    except requests.exceptions.RequestException as e:
-                        update_resp['title'] = 'Peer not reachable'
-                        print( '**{}\n**{}\n**{}'.format(update_resp['title'], peer, e) )
-                    
-                    if update_resp['title'] == "Success":
-                        success_response_ips.append('{}'.format(peer))
-                    else:
-                        failed_responses.append({ 'Peer': '{}'.format(peer), 'Response': update_resp })
+                    update_resp['title'] = 'Peer not reachable'
+                    print( '**{}\n**{}\n**{}'.format(update_resp['title'], peer_ip, e) )
+                    utils.notifier("peer_not_reachable", {'peer_ip': peer_ip})
+                
+                if update_resp['title'] == "Success":
+                    utils.notifier("registered_with_new_peer", {'peer_ip': peer_ip})
+                    final_title, final_msg = "Success", "You are registered with {}".format(peer_ip)
+                    msg = { 'title': final_title, 'message': final_msg }
+                    resp.content_type = 'application/json'
+                    resp.status = falcon.HTTP_200
+                    resp.body = json.dumps(msg)
                 else:
-                    failed_responses.append({ 'Peer': '{}'.format(peer), 'Response': json_resp })
-
-
-            if not failed_responses:
-                final_title = 'Success'
-                final_msg = 'You have been registered with: {}'.format(','.join(map(str, success_response_ips)) )
-                final_status = falcon.HTTP_201
+                    final_title, final_msg = "Fail", {"peer": peer_ip, "response": update_resp}
+                    msg = { 'title': final_title, 'message': final_msg }
+                    resp.content_type = 'application/json'
+                    resp.status = falcon.HTTP_404
+                    resp.body = json.dumps(msg)
             else:
-                final_title = 'Error: Unable to register with following peers.'
-                final_msg = {
-                    'failed_peers': failed_responses,
-                    'success_peers': success_response_ips
-                }
-                final_status = falcon.HTTP_500
-        
-        msg = {
-            'Title': final_title,
-            'Message': final_msg
-        }
+                utils.notifier("registration_failed", {'peer_ip': peer_ip})
+                final_title, final_msg = "Fail", {"peer": peer_ip, "response": json_resp}
+                msg = { 'title': final_title, 'message': final_msg }
+                resp.content_type = 'application/json'
+                resp.status = falcon.HTTP_403
+                resp.body = json.dumps(msg)
 
-        utils.notifier("new_peer", msg)
-        resp.content_type = 'application/json'
-        resp.status = final_status
-        resp.body = json.dumps(msg)
 
 class AddNewRegistration(object):
     def on_post(self, req, resp):
@@ -352,7 +347,12 @@ class AddNewRegistration(object):
         parsed = utils.parse_post_req(req)
         resp.content_type = 'application/json'
         msg, resp.status = DBService.add_new_peer_address(parsed, 'acceptance-pending')
-        utils.notifier("new_peer", parsed)
+        if msg["title"] == "Success: Successfully Added":
+            peer = {
+                "peer_ip" : parsed['ip'],
+                "status" : "acceptance-pending",
+            }
+            utils.notifier("new_peer_request", peer)
         resp.body = json.dumps(msg)
 
 
@@ -365,7 +365,7 @@ class AddPeerAddresses(object):
         parsed = utils.parse_post_req(req)
         resp.content_type = 'application/json'
         msg, resp.status = DBService.add_new_peer_address(parsed, 'unregistered')
-        utils.notifier("new_peer", parsed)
+        utils.notifier("added_new_peer", parsed)
         resp.body = json.dumps(msg)
 
 
@@ -404,10 +404,16 @@ class AcceptNewRegistration(object):
                     except requests.exceptions.RequestException as e:
                         err_msg = 'Peer not reachable'
                         print( '**{}\n**{}\n**{}'.format(err_msg, peer, e) )
+                        utils.notifier("peer_not_reachable", {'peer_ip': peer})
 
                 final_title = 'Success'
                 final_msg = 'Accepted Peer(s): {}'.format(accepted_peers)
                 resp.status = falcon.HTTP_201
+                peer = {
+                    'peer_ip': accepted_peers[0],
+                    'status': 'registered'
+                }
+                utils.notifier("accepted_peer", {'peer_ip': accepted_peers[0]})
             else:
                 final_title = 'Error'
                 final_msg = "Can only accept peers that exist in DB with status: 'acceptance-pending'."
@@ -418,7 +424,6 @@ class AcceptNewRegistration(object):
             'Message': final_msg
         }
 
-        utils.notifier("new_peer", msg)
         resp.content_type = 'application/json'
         resp.body = json.dumps(msg)
 
@@ -441,7 +446,6 @@ class RequestRegistrationUpdate(object):
                 final_title = 'Success'
                 final_msg = 'Okay. Attempting to send you my Info.'
                 resp.status = falcon.HTTP_200
-
                 ip_query = "SELECT IP FROM node_prefs"
                 my_ip = DBService.query("node_prefs", ip_query)['rows'][0]
                 my_pub_key = Certs().public_key
@@ -457,6 +461,7 @@ class RequestRegistrationUpdate(object):
                 except requests.exceptions.RequestException as e:
                     err_msg = 'Peer not reachable'
                     print( '**{}\n**{}\n**{}'.format(err_msg, peer, e) )
+                    utils.notifier("peer_not_reachable", {'peer_ip': peer_addr})
 
             elif peer_status == "acceptance-pending":
                 final_title = 'In Progress'
@@ -475,7 +480,6 @@ class RequestRegistrationUpdate(object):
             'title': str(final_title),
             'message': str(final_msg)
         }
-        utils.notifier("new_peer", msg)
         resp.content_type = 'application/json'
         resp.body = json.dumps(dict(msg))
 
@@ -497,7 +501,11 @@ class UpdateRegistrationStatus(object):
                 'Message': 'Thank you for accepting moi.'
             }
 
-            utils.notifier("new_peer", msg)
+            peer = {
+                'peer_ip': recv_payload['registrar_ip'],
+                'status': 'registered'
+            }
+            utils.notifier("accepted_by_peer", peer)
             resp.content_type = 'application/json'
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(msg)
@@ -535,11 +543,12 @@ class DiscoverPeerAddresses(object):
                     i['post_status'] = db_resp
                 else:
                     i['post_status'] = "The difference was inserted into DB."
+                    utils.notifier("new_peers_discovered", None)
             else:
                 i['difference'] = "No Difference."
                 i['post_status'] = "Nothing was inserted into DB."
+                utils.notifier("no_new_peers_discovered", None)
         
-        utils.notifier("peer_discovery_result", db_filenames)
         resp.status = falcon.HTTP_201
         resp.body = json.dumps(db_filenames)
 

@@ -5,6 +5,9 @@ import requests
 import falcon
 import db.service as DBService
 
+NOTIFICATION_URL = 'http://localhost:5200/notification'
+
+# NOTIFICATION_URL = ''
 
 def broadcast(payload, endpoint, request, isFile=False):
     """
@@ -75,10 +78,28 @@ def parse_post_req(req):
 
 
 def notifier(event_name, data):
-    url='http://localhost:5200/notification'
     payload = {
         "event_name": event_name,
         "data": data
     }
-    
-    ui_post = requests.post(url, data=json.dumps(payload))
+    if NOTIFICATION_URL:        
+        ui_post = requests.post(NOTIFICATION_URL, data=json.dumps(payload))
+        print(json.dumps(payload, indent=4))
+    else:
+        print(json.dumps(payload, indent=4))
+
+
+def resolve_blockchain(blockchain):
+    replaced = blockchain.resolve_conflicts()
+
+    if replaced:
+        #  check if selected txns are still in unconfirmed pool or not.
+        final_title, final_msg = "Success", "Our chain was replaced"
+        notifier("blockchain_replaced", None)
+    else:
+        # if selected txns are not in unconfirmed pool,
+        # tell them to re-select if not replaced.. continue
+        final_title, final_msg = "Success", "Our chain is authoritative"
+        notifier("our_blockchain_authoritative", None)
+
+    return (blockchain, final_title, final_msg)

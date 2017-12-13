@@ -63,3 +63,34 @@
         opacity:0;
     }
 }
+
+.peerslide {
+    &.ng-enter-prepare {
+        opacity: 0;
+    }
+    &.ng-enter,
+    &.ng-leave {
+        .transition(all 0.4s ease-out);
+        position: relative;
+    }
+
+    &.ng-leave.ng-leave-active,
+    &.ng-enter {
+        visibility: hidden;
+        opacity:0;
+        .transform(scale(0.5));
+    }
+
+    &.ng-enter.ng-enter-active,
+    &.ng-leave {
+        visibility: visible;
+        opacity: 1;
+        .transform(scale(1));
+    }
+
+    &.ng-enter-stagger {
+        .transition-delay(0.2s);        
+        -webkit-transition-duration: 0s;
+        transition-duration: 0s;
+    }
+}
