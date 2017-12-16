@@ -2,7 +2,6 @@ var app = angular.module('alysida', [
 'ngResource', 
 'ngAnimate', 
 'ngRoute', 
-'ui.date', 
 'ui-notification'
 ])
 .config(['$routeProvider','NotificationProvider', function ($routeProvider, NotificationProvider) {
