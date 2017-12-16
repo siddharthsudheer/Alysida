@@ -20,7 +20,7 @@ var app = angular.module('alysida', [
             controller: 'AddTransactionController'
         });
     NotificationProvider.setOptions({
-        delay: 50000,
+        delay: 3000,
         startTop: 32,
         startRight: 16,
         verticalSpacing: 16,
@@ -74,11 +74,6 @@ app.controller('MainController', function ($rootScope, $timeout, $scope, $locati
         $scope.location = $location.path();
     });
 
-    $scope.closeNewPeerForm = function closeNewPeerForm($event) {
-        $rootScope.newPeerFormOpen = false;
-        $event.stopPropagation();
-    };
-
     $scope.doConsensus = function doConsensus() {
         $rootScope.loading_msg = 'Finding Consensus Among Peers...';
         $rootScope.mainLoading = true;
@@ -112,7 +107,7 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
         $scope.peers = $filter('orderBy')(response.data.peers, 'status');
         $timeout(function () {
             $scope.peersReady = true;
-        },1000);
+        },500);
     });
 
     socket.on('new_peer_request', function (response) {
@@ -128,6 +123,14 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
         socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     });
 
+    socket.on('added_new_peer', function (response) {
+        var notifMsg = '<span class="reg">Successfully added : </span> \
+                        <span class="ip">'+response.data.ips+'</span> <br> \
+                        <span class="status">Registration Status: Unregistered</span>';
+        Notification.success({title: 'Added New Peer', message: notifMsg});
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
+    });
+
     socket.on('registered_with_new_peer', function (response) {
         var notifMsg = '<span class="reg">Registered with : </span> \
                         <span class="ip">'+response.data.peer_ip+'</span> <br> \
@@ -137,7 +140,7 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
             peer_ip: response.data.peer_ip,
             status: response.data.status
         }
-        $scope.peers.push(new_peer)
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     });
 
     socket.on('registration_success_waiting_for_handshake', function (response) {
@@ -145,6 +148,7 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
                         <span class="ip">'+response.data.peer_ip+'</span> <br> \
                         <span class="status">Success: Handshake Pending</span>';
         Notification.success({title: 'Successfully Registered', message: notifMsg});
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     });
 
     socket.on('registration_failed', function (response) {
@@ -152,6 +156,7 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
                         <span class="ip">'+response.data.peer_ip+'</span> <br> \
                         <span class="status">Check console for more info</span>';
         Notification.error({title: 'Failed Registration', message: notifMsg});
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     });
 
     socket.on('peer_not_reachable', function (response) {
@@ -166,6 +171,7 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
                         <span class="ip">'+response.data.peer_ip+'</span> <br> \
                         <span class="status">Success</span>';
         Notification.success({title: 'Accepted Peer Request', message: notifMsg});
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     });
 
     socket.on('accepted_by_peer', function (response) {
@@ -173,6 +179,7 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
                         <span class="ip">'+response.data.peer_ip+'</span> <br> \
                         <span class="status">Success: Your request was accepted</span>';
         Notification.success({title: 'Peer Request Accepted', message: notifMsg});
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     });
 
     socket.on('yet_to_be_accepted_by_peer', function (response) {
@@ -187,6 +194,8 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
                         <br> \
                         <span class="status">Success</span>';
         Notification.success({title: 'New Peers Found', message: notifMsg});
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
+        $timeout(function() { $rootScope.mainLoading = false;}, 1000);
     });
 
     socket.on('no_new_peers_discovered', function (response) {
@@ -194,14 +203,11 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
                         <br> \
                         <span class="status"></span>';
         Notification.info({title: 'No New Peers', message: notifMsg});
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
+        $timeout(function() { $rootScope.mainLoading = false;}, 1000);
     });
 
     //Actions
-    $scope.showNewPeerForm = function showNewPeerForm($event) {
-        $rootScope.newPeerFormOpen = true;
-        $event.stopPropagation();
-    }
-
     $scope.acceptPeer = function acceptPeer(peer_ip) {
         $scope.peer_obj = {
             ips: []
@@ -221,6 +227,30 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
     $scope.askPeerForUpdate = function askPeerForUpdate(peer_ip) {
         $scope.registerWithPeer(peer_ip);
     };
+
+
+    // Manually adding Peers
+    $scope.showNewPeerForm = function showNewPeerForm($event) {
+        $event.stopPropagation();
+        $rootScope.newPeerFormOpen = true;
+    }
+
+    $scope.addNewPeer = function addNewPeer($event, peer_ip) {
+        $event.stopPropagation();
+        var ips_obj = {
+            ip: ""
+        };
+        ips_obj.ip = peer_ip;
+        $rootScope.newPeerFormOpen = false;
+        socket.emit('post_peers', { endpoint: 'add-peer-addresses', data: ips_obj });
+    };
+
+    $scope.closeNewPeerForm = function closeNewPeerForm($event) {
+        $rootScope.newPeerFormOpen = false;
+        $event.stopPropagation();
+    };
+
+    
 });
 
 

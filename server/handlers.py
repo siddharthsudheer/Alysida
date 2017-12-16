@@ -363,6 +363,7 @@ class AddPeerAddresses(object):
             to add peer addresses
         """
         parsed = utils.parse_post_req(req)
+        parsed['pub_key'] = "unreceived"
         resp.content_type = 'application/json'
         msg, resp.status = DBService.add_new_peer_address(parsed, 'unregistered')
         utils.notifier("added_new_peer", parsed)

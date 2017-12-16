@@ -168,6 +168,26 @@
                 }
             }
         }
+
+        .help_block {
+            display: none;
+            margin: 0px;
+            font-size: 12px;
+            font-style: italic;
+            text-align: right;
+            color: @red;
+            .general-transition();
+        }/* .help_block */
+
+        .has-error {
+            .input input {
+                border-color: @red;
+            }/* .input */
+
+            .help_block {
+                display: block;
+            }
+        }/* .has-error */
     }/* add_peer_form */
 }/* .peer.btn.add */
 
@@ -249,6 +269,21 @@
             top: 3px;
             position: relative;
             margin-left: 4px;
+        }
+
+        .disabled() {
+            cursor: not-allowed;
+            color: fade(#8a8a8a, 40%);
+            border: 1px dashed fade(#8a8a8a, 40%);
+            background: #eeeeee;
+        }
+
+        &:disabled {
+            .disabled();
+
+            &:hover {
+                .disabled();
+            }
         }
     }
 }

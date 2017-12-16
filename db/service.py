@@ -128,7 +128,7 @@ def add_new_peer_address(parsed, adding_status):
 
     # they dont exist regardless
     # of adding_status
-    if not exist_result:
+    if not exist_result:            
         vals = "('{}', '{}', '{}')".format(peer['ip'], peer['pub_key'], peer['status'])
         sql = insert_into("peer_addresses", vals)
         db_resp = post("peer_addresses", sql)
