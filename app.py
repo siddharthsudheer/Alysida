@@ -23,10 +23,10 @@ def create_app(db_store):
     api.add_route('/mine', server.MineBlock())  # POST
     api.add_route('/get-blockchain', server.GetBlockchain())  # GET
     api.add_route('/consensus', server.Consensus())  # GET
-    api.add_route('/request-registration-update', server.RequestRegistrationUpdate())  # POST
     api.add_route('/accept-new-registration', server.AcceptNewRegistration())  # POST
    
     # Internal Routes
+    api.add_route('/request-registration-update', server.RequestRegistrationUpdate())  # POST
     api.add_route('/new-registration', server.AddNewRegistration())  # POST
     api.add_route('/update-registration-status', server.UpdateRegistrationStatus())  # POST
     api.add_route('/serve-peer-addresses', server.ServePeerAddresses(db_store))  # GET

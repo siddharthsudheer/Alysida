@@ -125,7 +125,7 @@ app.controller('PeersController', function ($filter, $timeout, $rootScope, $scop
             peer_ip: response.data.peer_ip,
             status: response.data.status
         }
-        $scope.peers.push(new_peer)
+        socket.emit('get_peers', { endpoint: 'get-peer-addresses' });
     });
 
     socket.on('registered_with_new_peer', function (response) {
