@@ -1,0 +1,22 @@
+@import "variables.less";
+
+html {
+    background-color: @body-bg;
+}
+body {
+    font-family: @font-family-base;
+    font-size: @font-size-base;
+    color: @text-color;
+    background-color: @body-bg;
+    -webkit-font-smoothing: antialiased;
+    line-height: @line-height-base;
+    margin: 0;
+}
+  
+*:focus {
+    outline: 0 !important;
+}
+
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+}

@@ -1,4 +1,4 @@
 #!/usr/bin/env python3
-from app import app, socketio
+from src import serverApp, socketio
 
-socketio.run(app, host='0.0.0.0', port=5200, debug=True)
+socketio.run(serverApp, host='0.0.0.0', port=5200, debug=True)

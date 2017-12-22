@@ -1,0 +1,233 @@
+/* ===================================================
+ * 1) Colors
+ * =================================================== */
+/* ===================================================
+  * 2) Fonts
+  * =================================================== */
+/* ===================================================
+  * 3) Mixins
+  * =================================================== */
+/* .diamond_shape  */
+html {
+  background-color: #F3F3F3;
+}
+body {
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #F3F3F3;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.42857143;
+  margin: 0;
+}
+*:focus {
+  outline: 0 !important;
+}
+[ng\:cloak],
+[ng-cloak],
+.ng-cloak {
+  display: none !important;
+}
+main {
+  background-image: radial-gradient(circle at 47% 9%, #3e825f, #1a4172);
+  height: 1450px;
+  min-height: 1200px;
+  height: 100vh;
+  /* header.main-header */
+}
+main header.main-header {
+  margin: 0;
+  position: fixed;
+  width: 100%;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  height: 64px;
+  /* .burger-container */
+  /* .icon */
+}
+main header.main-header .burger-container {
+  position: relative;
+  display: inline-block;
+  float: right;
+  height: 63px;
+  width: 63px;
+  cursor: pointer;
+  -webkit-transform: rotate(0deg);
+  transform: rotate(0deg);
+  -webkit-transition: all 0.3s cubic-bezier(0.4, 0.01, 0.165, 0.99);
+  transition: all 0.3s cubic-bezier(0.4, 0.01, 0.165, 0.99);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -ms-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+  /* #burger */
+}
+main header.main-header .burger-container #burger {
+  width: 18px;
+  height: 8px;
+  position: relative;
+  display: block;
+  margin: -4px auto 0;
+  top: 50%;
+  /* .bar*/
+}
+main header.main-header .burger-container #burger .bar {
+  width: 100%;
+  height: 1px;
+  display: block;
+  position: relative;
+  background: #FFF;
+  -webkit-transition: all 0.3s cubic-bezier(0.4, 0.01, 0.165, 0.99);
+  transition: all 0.3s cubic-bezier(0.4, 0.01, 0.165, 0.99);
+  -webkit-transition-delay: 0s;
+  transition-delay: 0s;
+}
+main header.main-header .burger-container #burger .bar.topBar {
+  -webkit-transform: translateY(0px) rotate(0deg);
+  transform: translateY(0px) rotate(0deg);
+}
+main header.main-header .burger-container #burger .bar.btmBar {
+  -webkit-transform: translateY(6px) rotate(0deg);
+  transform: translateY(6px) rotate(0deg);
+}
+main header.main-header .icon {
+  width: 102px !important;
+  padding: 16px;
+  top: -1px;
+  display: inline-block;
+  position: absolute;
+  line-height: 50px;
+  text-align: center;
+  color: #FFF;
+  font-size: 22px;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -ms-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+}
+main header.main-header .icon a {
+  text-decoration: none;
+  outline: 0;
+  -webkit-transition: all 0.4s ease-in-out;
+  -moz-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out;
+  color: #2089C4;
+  display: block;
+}
+main header.main-header .icon a img {
+  max-width: 100%;
+  display: block;
+  vertical-align: middle;
+  border: 0;
+}
+main #main-div {
+  position: relative;
+  display: block;
+  padding-top: 64px;
+}
+/* main */
+@media screen and (max-width: 991px) {
+  main {
+    /* header.main-header  */
+  }
+  main header.main-header {
+    height: 51px;
+    /* .icon */
+  }
+  main header.main-header .icon {
+    width: 82px !important;
+  }
+  /* main */
+}
+/* @media screen and (max-width: 991px) */
+blockchain {
+  padding: 16px;
+  display: block;
+}
+html,
+body {
+  background: #000000;
+}
+html {
+  font-size: 10px;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+html * {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+html *:before,
+html *:after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #fff;
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.42857143;
+  overflow-x: hidden;
+  margin: 0;
+}
+body app {
+  position: relative;
+  display: block;
+}
+*:focus {
+  outline: 0 !important;
+}
+button,
+.button {
+  font-size: 12px;
+  text-transform: uppercase;
+  padding: 16px 40px;
+  min-width: 224px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  text-align: center;
+  border-radius: 1px;
+  display: inline-block;
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
+  margin: 7px;
+  -webkit-transition: all 0.4s ease-in-out;
+  -moz-transition: all 0.4s ease-in-out;
+  -ms-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out;
+}
+button:hover,
+.button:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+button.secondary,
+.button.secondary {
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+button.secondary:hover,
+.button.secondary:hover {
+  color: #FFF;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}

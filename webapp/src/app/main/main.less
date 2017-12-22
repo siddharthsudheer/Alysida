@@ -1,0 +1,117 @@
+main {
+    background-image: radial-gradient(circle at 47% 9%, #3e825f, #1a4172);
+    height: 1450px;
+    min-height: 1200px;
+    height: 100vh;
+
+    header.main-header {
+        margin: 0;
+        position: fixed;
+        width: 100%;
+        padding: 0;
+        background: rgba(0,0,0,.5);
+        z-index: 9999;
+        height: 64px;
+
+
+        .burger-container {
+            position: relative;
+            display: inline-block;
+            float: right;
+            height: 63px;
+            width: 63px;
+            cursor: pointer;
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+            -webkit-transition: all 0.3s cubic-bezier(0.4,0.01,0.165,0.99);
+            transition: all 0.3s cubic-bezier(0.4,0.01,0.165,0.99);
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            .general-transition();
+
+            #burger {
+                width: 18px;
+                height: 8px;
+                position: relative;
+                display: block;
+                margin: -4px auto 0;
+                top: 50%;
+
+                .bar {
+                    width: 100%;
+                    height: 1px;
+                    display: block;
+                    position: relative;
+                    background: #FFF;
+                    -webkit-transition: all 0.3s cubic-bezier(0.4,0.01,0.165,0.99);
+                    transition: all 0.3s cubic-bezier(0.4,0.01,0.165,0.99);
+                    -webkit-transition-delay: 0s;
+                    transition-delay: 0s;
+
+                    &.topBar {
+                        -webkit-transform: translateY(0px) rotate(0deg);
+                        transform: translateY(0px) rotate(0deg);
+                    }
+
+                    &.btmBar {
+                        -webkit-transform: translateY(6px) rotate(0deg);
+                        transform: translateY(6px) rotate(0deg);
+                    }
+                }/* .bar*/ 
+            }/* #burger */ 
+        }/* .burger-container */ 
+
+        .icon {
+            width: 102px !important;
+            padding: 16px;
+            top: -1px;
+            display: inline-block;
+            position: absolute;
+            line-height: 50px;
+            text-align: center;
+            color: #FFF;
+            font-size: 22px;
+            .general-transition();
+
+            a {
+                text-decoration: none;
+                outline: 0;
+                -webkit-transition: all .4s ease-in-out;
+                -moz-transition: all .4s ease-in-out;
+                -o-transition: all .4s ease-in-out;
+                transition: all .4s ease-in-out;
+                color: #2089C4;
+                display: block;
+
+                img {
+                    max-width: 100%;
+                    display: block;
+                    vertical-align: middle;
+                    border: 0;
+                }
+            }
+        }/* .icon */
+    }/* header.main-header */ 
+
+    #main-div {
+        position: relative;
+        display: block;
+        padding-top: 64px;
+    }
+}/* main */
+
+
+@media screen and (max-width: 991px) {
+    main {
+        header.main-header {
+            height: 51px;
+
+            .icon {
+                width: 82px !important;
+            }/* .icon */
+        }/* header.main-header  */
+    }/* main */
+}/* @media screen and (max-width: 991px) */

@@ -9,5 +9,6 @@ __pycache__/
 db/my_dbs/
 crypt/my_certs/
 AlysidaFile
+webapp/run.out
 
 
