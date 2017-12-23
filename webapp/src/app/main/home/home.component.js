@@ -8,6 +8,12 @@ class Home {
         this.$location = $location;
         this.$state = $state;
         this.$timeout = $timeout;
+
+        this.txn = {
+            sender: null,
+            receiver: null,
+            amount: null
+        };
     }
 }
 
