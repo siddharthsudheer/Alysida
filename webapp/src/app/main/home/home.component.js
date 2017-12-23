@@ -1,6 +1,6 @@
 'use strict';
 
-class Blockchain {
+class Home {
     /*@ngInject*/
     constructor($rootScope, $scope, $location, $state, $timeout) {
         this.$rootScope = $rootScope;
@@ -14,7 +14,7 @@ class Blockchain {
 
 angular
     .module('alysida')
-    .component('blockchain', {
-        controller: Blockchain,
-        templateUrl: 'main/blockchain/blockchain.component.html'
+    .component('home', {
+        controller: Home,
+        templateUrl: 'main/home/home.component.html'
     });

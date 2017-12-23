@@ -1,0 +1,30 @@
+/* ===================================================
+ * 1) Colors
+ * =================================================== */
+/* ===================================================
+  * 2) Fonts
+  * =================================================== */
+/* ===================================================
+  * 3) Mixins
+  * =================================================== */
+/* .diamond_shape  */
+html {
+  background-color: #F3F3F3;
+}
+body {
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #F3F3F3;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.42857143;
+  margin: 0;
+}
+*:focus {
+  outline: 0 !important;
+}
+[ng\:cloak],
+[ng-cloak],
+.ng-cloak {
+  display: none !important;
+}

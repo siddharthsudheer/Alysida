@@ -30,28 +30,113 @@ body {
 }
 main {
   background-image: radial-gradient(circle at 47% 9%, #3e825f, #1a4172);
-  height: 1450px;
-  min-height: 1200px;
+  min-height: 100vh;
   height: 100vh;
-  /* header.main-header */
+  /* #main-div */
 }
-main header.main-header {
+main #main-div {
+  position: relative;
+  display: block;
+  padding-top: 64px;
+  margin: 0 auto;
+  width: 100%;
+  height: 100vh;
+  /* .col */
+}
+main #main-div .inner-wrapper {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  -webkit-justify-content: flex-start;
+  -ms-flex-pack: start;
+  justify-content: flex-start;
+  -webkit-align-content: stretch;
+  -ms-flex-line-pack: stretch;
+  align-content: stretch;
+  -webkit-align-items: stretch;
+  -ms-flex-align: stretch;
+  align-items: stretch;
+}
+main #main-div .col {
+  display: inline-block;
+  height: 100%;
+  width: 100%;
+}
+main #main-div .col .inner {
+  height: 100%;
+}
+main #main-div home {
+  max-width: 240px;
+}
+main #main-div unconfirmed-txns.col {
+  max-width: 400px;
+}
+main #main-div home,
+main #main-div unconfirmed-txns,
+main #main-div blockchain {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid #3e825f;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
+}
+main #main-div home .header,
+main #main-div unconfirmed-txns .header,
+main #main-div blockchain .header {
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.09);
+  text-transform: uppercase;
+  font-size: 14px;
+  padding: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  background: -webkit-linear-gradient(45deg, #2e5f46, #3e825f);
+  background: -o-linear-gradient(45deg, #2e5f46, #3e825f);
+  background: linear-gradient(45deg, #2e5f46, #3e825f);
+}
+main #main-div home,
+main #main-div unconfirmed-txns {
+  margin-right: 8px;
+}
+/* main */
+@media screen and (max-width: 991px) {
+  main #main-div .inner-wrapper {
+    top: 51px;
+  }
+  /* main */
+}
+/* @media screen and (max-width: 991px) */
+home .body {
+  min-height: 300px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+top-nav {
   margin: 0;
   position: fixed;
   width: 100%;
   padding: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: transparent;
   z-index: 9999;
   height: 64px;
   /* .burger-container */
   /* .icon */
+  /* @media screen and (max-width: 991px) */
 }
-main header.main-header .burger-container {
+top-nav .burger-container {
   position: relative;
   display: inline-block;
   float: right;
-  height: 63px;
-  width: 63px;
+  height: 50px;
+  width: 50px;
   cursor: pointer;
   -webkit-transform: rotate(0deg);
   transform: rotate(0deg);
@@ -62,6 +147,7 @@ main header.main-header .burger-container {
   -ms-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  visibility: hidden;
   -webkit-transition: all 0.2s ease-out;
   -moz-transition: all 0.2s ease-out;
   -ms-transition: all 0.2s ease-out;
@@ -69,16 +155,22 @@ main header.main-header .burger-container {
   transition: all 0.2s ease-out;
   /* #burger */
 }
-main header.main-header .burger-container #burger {
+top-nav .burger-container #burger {
   width: 18px;
   height: 8px;
   position: relative;
   display: block;
   margin: -4px auto 0;
   top: 50%;
+  opacity: 0.7;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -ms-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
   /* .bar*/
 }
-main header.main-header .burger-container #burger .bar {
+top-nav .burger-container #burger .bar {
   width: 100%;
   height: 1px;
   display: block;
@@ -89,31 +181,37 @@ main header.main-header .burger-container #burger .bar {
   -webkit-transition-delay: 0s;
   transition-delay: 0s;
 }
-main header.main-header .burger-container #burger .bar.topBar {
+top-nav .burger-container #burger .bar.topBar {
   -webkit-transform: translateY(0px) rotate(0deg);
   transform: translateY(0px) rotate(0deg);
 }
-main header.main-header .burger-container #burger .bar.btmBar {
+top-nav .burger-container #burger .bar.btmBar {
   -webkit-transform: translateY(6px) rotate(0deg);
   transform: translateY(6px) rotate(0deg);
 }
-main header.main-header .icon {
+top-nav .burger-container:hover #burger {
+  opacity: 1;
+}
+top-nav .icon {
   width: 102px !important;
-  padding: 16px;
-  top: -1px;
+  height: 35px;
+  left: 50%;
+  top: 14px;
   display: inline-block;
   position: absolute;
   line-height: 50px;
   text-align: center;
-  color: #FFF;
+  color: #fff;
   font-size: 22px;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
   -webkit-transition: all 0.2s ease-out;
   -moz-transition: all 0.2s ease-out;
   -ms-transition: all 0.2s ease-out;
   -o-transition: all 0.2s ease-out;
   transition: all 0.2s ease-out;
 }
-main header.main-header .icon a {
+top-nav .icon a {
   text-decoration: none;
   outline: 0;
   -webkit-transition: all 0.4s ease-in-out;
@@ -123,36 +221,87 @@ main header.main-header .icon a {
   color: #2089C4;
   display: block;
 }
-main header.main-header .icon a img {
+top-nav .icon a img {
   max-width: 100%;
   display: block;
   vertical-align: middle;
   border: 0;
 }
-main #main-div {
-  position: relative;
-  display: block;
-  padding-top: 64px;
-}
-/* main */
 @media screen and (max-width: 991px) {
-  main {
-    /* header.main-header  */
-  }
-  main header.main-header {
+  top-nav {
     height: 51px;
     /* .icon */
   }
-  main header.main-header .icon {
-    width: 82px !important;
+  top-nav .burger-container {
+    visibility: visible;
+    opacity: 1;
   }
-  /* main */
+  top-nav .icon {
+    width: 82px !important;
+    height: 30px;
+    top: 13px;
+  }
 }
-/* @media screen and (max-width: 991px) */
-blockchain {
-  padding: 16px;
+/* top-nav */
+bottom-nav {
+  display: none;
+  margin: 0;
+  position: fixed;
+  width: 100%;
+  padding: 0;
+  z-index: 9999;
+  height: 51px;
+  bottom: 0;
+  border-top: 1px solid rgba(62, 130, 95, 0.2);
+  /* .nav-items */
+}
+bottom-nav .nav-items {
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-align-content: center;
+  -ms-flex-line-pack: center;
+  align-content: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  /* a */
+  /* .vertical-divider */
+}
+bottom-nav .nav-items a {
+  text-transform: uppercase;
+  font-size: 12px;
+  padding: 16px 32px;
+  min-width: 160px;
+  line-height: 20px;
+  text-align: center;
+  width: 100%;
+  color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.3);
+}
+bottom-nav .nav-items a:hover,
+bottom-nav .nav-items a:focus {
+  color: #3e825f;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+bottom-nav .nav-items .vertical-divider {
   display: block;
+  border-right: 1px solid rgba(62, 130, 95, 0.2);
+  height: 52px;
+  width: 2px;
 }
+/* bottom-nav */
 html,
 body {
   background: #000000;
@@ -230,4 +379,20 @@ button.secondary:hover,
   color: #FFF;
   background-color: rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
+}
+a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  outline: 0;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -ms-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+}
+a:hover,
+a:focus {
+  color: inherit;
+  text-decoration: none;
 }
