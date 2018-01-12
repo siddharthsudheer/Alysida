@@ -103,3 +103,87 @@ a {
         text-decoration: none;
     }
 }
+
+.checkbox {
+/* 
+<div class="checkbox">
+    <label class="container">Add to New Block
+        <input type="checkbox">
+        <span class="checkmark"></span>
+    </label>
+</div>
+*/
+
+    /* The container */
+    .container {
+        display: block;
+        position: relative;
+        padding-left: 24px;
+        line-height: 17px;
+        cursor: pointer;
+        font-size: inherit;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+
+        /* Create a custom checkbox */
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 16px;
+            width: 16px;
+            background-color: #eee;
+            .general-transition();
+
+            /* Create the checkmark/indicator (hidden when not checked) */
+            &:after {
+                content: "";
+                position: absolute;
+                visibility: hidden;
+                opacity: 0;
+
+                left: 6px;
+                top: 1px;
+                width: 5px;
+                height: 12px;
+                border: solid white;
+                border-width: 0 2px 2px 0;
+                .transform(rotate(45deg) scale(0.1));
+                .general-transition();
+            }
+        }
+
+        
+        input {
+            /* Hide the browser's default checkbox */
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+
+            /* When the checkbox is checked, add a blue background */
+            &:checked ~ .checkmark {
+                background-color: #2196F3;
+
+                /* Show the checkmark when checked */
+                &:after {
+                    .transform(rotate(45deg) scale(0.9));
+                    visibility: visible;
+                    opacity: 1;
+                }
+            }
+        }/* input */    
+    }/* .container */
+
+    &.right {
+        .container {
+            padding-left: initial;
+            padding-right: 24px;
+            .checkmark {
+                left: initial;
+                right: 0;
+            }/* .checkmark  */
+        }/* .container */
+    } /* &.right */
+}/* .checkbox */

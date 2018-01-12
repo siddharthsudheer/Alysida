@@ -1,2 +1,80 @@
 unconfirmed-txns {
-}
+    .inner {
+        overflow: hidden;
+    }
+    .body {
+        max-height: 748px;
+        overflow-y: scroll;
+        padding-bottom: 72px;
+        display: block;
+        .transaction {
+            margin: 8px 0;
+            padding: 16px;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1;
+            color: rgba(0, 0, 0, 0.65);
+            text-align: left;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            background: rgba(255,255,255,0.05);
+    
+            .row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: nowrap;
+                text-overflow: ellipsis;
+                margin-bottom: 4px;
+
+                // &:first-child {
+                //     margin-top: 0;
+                // }
+    
+                .label {
+                    font-weight: 800;
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    margin-right: 4px;
+                    width: 70px;
+                    line-height: 13px;
+                    color: rgba(255,255,255,0.5);
+                    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.09);
+                    text-align: right;
+                }
+                
+                .value {
+                    margin-left: 4px;
+                    display: block;
+                    font-size: 8pt;
+                    font-family: @code-font;
+                    cursor: default;
+                    width: 100%;
+                    overflow: auto;
+                    white-space: normal;
+                    color: @green-two;
+                    background: rgba(0,0,0,0.2);
+    
+                    line-height: 24px;
+                    height: 24px;
+                    padding: 0 8px;
+                    border-radius: 4px;
+                    border: 1px dashed rgba(255, 255, 255, 0.15);
+                    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.09);
+                }
+
+                &.add_to_block {
+                    position: relative;
+                    top: -6px;
+
+                    .label {
+                        width: 100%;
+                        margin-right: 0;
+                        line-height: 16px;
+                    }
+                }
+            }/* .row */
+        }/* .transaction */
+    }/* .body */
+}/* unconfirmed-txns */

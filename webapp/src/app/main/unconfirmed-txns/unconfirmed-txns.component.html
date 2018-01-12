@@ -1,3 +1,40 @@
 <div class="inner">
     <div class="header">Unconfirmed Transactions</div>
+    <div class="body">
+
+            <div class="transaction" ng-repeat="txn in [1,2,3,4,5,6]">
+
+                <div class="row add_to_block">
+                    <span class="label">
+                        <div class="checkbox right">
+                            <label class="container">Add to New Block
+                                <input type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">Timestamp</span>
+                    <span class="value">2018-01-10 23:53:11.726568</span>
+                </div>
+                <div class="row">
+                    <span class="label">Txn Hash</span>
+                    <span class="value">djhasdadkasdjkhajsdhkajsdhkajsdhajksdhakjsdhasdasdasd123rdwsdfl</span>
+                </div>
+                <div class="row">
+                    <span class="label">Sender</span>
+                    <span class="value">djhasdadkasdjkhajsdhkajsdhkajsdhajksdhakjsdhasdasdasd123rdwsdfl</span>
+                </div>
+                <div class="row">
+                    <span class="label">Receiver</span>
+                    <span class="value">djhasdadkasdjkhajsdhkajsdhkajsdhajksdhakjsdhasdasdasd123rdwsdfl</span>
+                </div>
+                <div class="row">
+                    <span class="label">Amount</span>
+                    <span class="value">10000000</span>
+                </div>
+            </div>
+
+    </div>
 </div>
