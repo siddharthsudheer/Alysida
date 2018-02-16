@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" ng-app="alysida">
+<head>
+    <base href="/">        
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Alysída</title>
+
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .wrap {
+            /* width: 320px;
+            height: 192px; */
+            float: left;
+            padding: 0;
+            display: inline-block;
+        }
+        #one, #two, #three, #four {
+            width: 800px;
+            height: 786px; 
+            border: 0;
+            border-style: none;
+            border-width: 0px;
+        
+            /* -ms-transform: scale(0.9);
+            -moz-transform: scale(0.9);
+            -o-transform: scale(0.9);
+            -webkit-transform: scale(0.9);
+            transform: scale(0.9); */
+        
+            /* -ms-transform-origin: 0 0;
+            -moz-transform-origin: 0 0;
+            -o-transform-origin: 0 0;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;*/
+        }
+    </style>
+    <script>
+        window.onload = function(){
+            var w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            x = w.innerWidth || e.clientWidth || g.clientWidth,
+            y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+            console.log(x + ' × ' + y);
+            halfW = x/2 + "px";
+            halfH = y/2 + "px";
+
+            // console.log(halfW + ' × ' + halfH);
+            // document.getElementById("oneW").style.height =halfH;
+            // document.getElementById("twoW").style.height =halfH;
+            // document.getElementById("threeW").style.height =halfH;
+            // document.getElementById("fourW").style.height = halfH;
+
+            // document.getElementById("oneW").style.width = halfW;
+            // document.getElementById("twoW").style.width = halfW;
+            // document.getElementById("threeW").style.width = halfW;
+            // document.getElementById("fourW").style.width = halfW;
+
+            document.getElementById("one").style.height =halfH;
+            document.getElementById("two").style.height =halfH;
+            document.getElementById("three").style.height =halfH;
+            document.getElementById("four").style.height = halfH;
+
+            // document.getElementById("one").style.width = halfW;
+            // document.getElementById("two").style.width = halfW;
+            // document.getElementById("three").style.width = halfW;
+            // document.getElementById("four").style.width = halfW;
+
+            // document.getElementById("one").style.width = 1100;
+            // document.getElementById("two").style.width = 1100;
+            // document.getElementById("three").style.width = 1100;
+            // document.getElementById("four").style.width = 1100;
+
+
+        }
+    </script>
+</head>
+
+<!-- <td><iframe id="one" style="border-style: none; border-color: inherit; border-width: 0px; height:50vh; width:100%;" src="http://localhost:5200/"></iframe></td> -->
+<body style="margin:0;">
+    <!-- <div class="top">
+        <div class="wrap" id="oneW">
+                <iframe id="one" src="http://localhost:5200/"></iframe>
+        </div>
+        <div class="wrap" id="twoW">
+                <iframe id="two" src="http://localhost:5201/"></iframe>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="wrap" id="threeW">
+                <iframe id="three" src="http://localhost:5202/"></iframe>
+        </div>
+        <div class="wrap" id="fourW">
+                <iframe id="four" src="http://localhost:5203/"></iframe>
+        </div>
+    </div> -->
+
+    <table style="width:100%;">
+        <tr>
+            <td><iframe id="one" style="border-style: none; border-color: inherit; border-width: 0px;" src="http://localhost:5200/"></iframe></td>
+            <td><iframe id="two" style="border-style: none; border-color: inherit; border-width: 0px;" src="http://localhost:5201/"></iframe></td>
+        </tr>
+        <tr>
+            <td><iframe id="three" style="border-style: none; border-color: inherit; border-width: 0px;" src="http://localhost:5202/"></iframe></td>
+            <td><iframe id="four" style="border-style: none; border-color: inherit; border-width: 0px;" src="http://localhost:5203/"></iframe></td>
+        </tr>
+    </table>
+
+    
+    
+</body>
+</html>
