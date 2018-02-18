@@ -18,7 +18,7 @@ Pre-requisite:
 * Docker Daemon Running
 * Ports `4200, 4201, 4202, 4203, 5200, 5201, 5202, 5203` available.
 
-To start network up: `./alys -m up`
+To start network up: `./alys.sh -m up`
 
 Then, you can visit the UI's each of the nodes at:
 
@@ -34,5 +34,5 @@ The Alysída endpoints that each of the above nodes access are:
 `http://localhost:4202/`
 `http://localhost:4203/`
 
-To stop the network: `./alys -m down`
-To cleanup the docker containers on network: `./alys -m cleanup`
+To stop the network: `./alys.sh -m down`
+To cleanup the docker containers on network: `./alys.sh -m cleanup`
